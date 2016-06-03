@@ -1,0 +1,25 @@
+---
+title: "Analizando el dataset Census Income"
+author: "Marta Gómez y Braulio Vargas"
+date: "3 de junio de 2016"
+lang: es
+output: 
+  pdf_document:
+    fig_caption: yes
+    includes:
+      in_header: structure.tex
+    number_sections: yes
+    toc: yes
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	cache=TRUE
+)
+```
+
+
