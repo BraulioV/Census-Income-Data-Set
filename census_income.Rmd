@@ -22,4 +22,32 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Definición del problema a resolver y enfoque elegido
 
+# Codificación de los datos de entrada para hacerlos útiles a los algoritmos
+
+# Valoración del interés de las variables para el problema y selección de un subconjunto
+
+# Normalización de las variables
+
+# Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas
+
+# Aplicación de la técnica
+
+## Estimación de los parámetros
+
+## Estimación de los hiperparámetros
+
+## Error de generalización
+
+# Idoneidad de la función de regularización usada
+
+# Valoración de resultados
+
+# Justificación de la solución obtenida en base a la ténica usada y los datos.
+
+## Dimensión VC del modelo
+
+## Error de generalización del modelo
+
+## Curva de aprendizaje del modelo
