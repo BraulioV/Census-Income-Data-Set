@@ -73,20 +73,45 @@ Los atributos de los que disponemos son:
     * _Married-spouse-absent_: la persona aparece como casada en el registro, pero no se encuentra a ninguna pareja [@maritalstatus].
     
     * _Married-AF-spouse_: la persona está casada con alguien de las fuerzas armadas.
-
+    
+* ___occupation___: variable categórica que describe el tipo de profesión que tiene la persona. Puede tomar los valores _Tech-support_, _Craft-repair_, _Other-service_, _Sales_, _Exec-managerial_, _Prof-specialty_, _Handlers-cleaners_, _Machine-op-inspct_, _Adm-clerical_, _Farming-fishing_, _Transport-moving_, _Priv-house-serv_, _Protective-serv_, _Armed-Forces_. 
 
 * ___relationship___: variable que contiene el valor que puede tomar la relación de una persona con respecto a otra dentro de una familia. Contiene solo un valor por instancia del dato. Estos valores pueden ser _Wife_ (Esposa), _Own-child_ (hijo propio), _Husband_ (marido), _Not-in-family_ (sin familia), _Other-relative_ (otro tipo de familiar) y _Unmarried_ (soltero).
+
 * ___race___: valor que describe la raza de la persona. Puede ser _White_ (Blanco), _Asian-Pac-Islander_ (asíatico o de las islas del pacífico), _Amer-Indian-Eskimo_ (indio americano o esquimal), _Other_ (otro) y _Black_ (negro).
 
 * ___sex___: sexo de la persona, _Female_ (mujer) o _Male_ (hombre).
 
 * ___capital-gain___: registro de la ganancia de capital de la persona.
 
-* ___capital-lost___: registro de la pérdida de capital de la persona.
+* ___capital-loss___: registro de la pérdida de capital de la persona.
 
 * ___hours-per-week___: corresponde a las horas de trabajo a la semana.
 
 * ___country___: país de pertenencia. En este caso, hay una mayor variedad de valores, siendo los siguientes: _United-States_, _Cambodia_, _England_, _Puerto-Rico_, _Canada_, _Germany_, _Outlying-US(Guam-USVI-etc)_, _India_, _Japan_, _Greece_, _South_, _China_, _Cuba_, _Iran_, _Honduras_, _Philippines_, _Italy_, _Poland_, _Jamaica_, _Vietnam_, _Mexico_, _Portugal_, _Ireland_, _France_, _Dominican-Republic_, _Laos_, _Ecuador_, _Taiwan_, _Haiti_, _Columbia_, _Hungary_, _Guatemala_, _Nicaragua_, _Scotland_, _Thailand_, _Yugoslavia_, _El-Salvador_, _Trinadad&Tobago_, _Peru_, _Hong_, _Holand-Netherlands_,  o lo que es lo mismo, Estados-Unidos, Colombia, Inglaterra, Puerto-Rico, Canada, Alemania, Estados supervisados de los Estados Unidos, India, Japón, Grecia, Sudáfrica, China, Cuba, Irán, Honduras, Filipinas, Italia, Polonia, Jamaica, Vietnam, México, Portugal, Irlanda, Francia, República Dominicana, Laos, Ecuador, Taiwn, Haití, Colombia, Hungría, Guatemala, Nicaragua, Escocia, Tailandia, Yugoslavia, El Salvador y Trinidad-Tobago.
+
+* ___income___: corresponde al valor que queremos predecir, puede tomar los valores "<=50K" o ">50K"
+
+## Valores perdidos
+
+Respecto a los valores perdidos, podríamos tomar tres enfoques diferentes: sustituirlos por una media, eliminar todas las filas que contengan algún valor perdido o no usar las variables que contengan valores perdidos. Para tomar esta decisión, primero hemos de estudiar el porcentaje de valores perdidos que presentan los datos.
+
+Para ello, en primer lugar leemos los datos. 
+
+```{r}
+adult.train <- read.csv("./Data/adult.data", header=FALSE, col.names = c("age","workclass", 
+        "fnlwgt","education","education-num","marital-status","occupation","relationship",
+        "race","sex","capital-gain","capital-loss","hours-per-week","country","income"), 
+        na.strings = c(" ?", "?"))
+```
+
+Una vez leídos, calculamos el número de variables perdidas en cada columna:
+
+```{r}
+apply(X=adult.train, MARGIN=2, FUN=function(columna) length(is.na(columna)))
+```
+
+En todas las columnas hay el mismo número de variables pérdidas.
 
 # Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
