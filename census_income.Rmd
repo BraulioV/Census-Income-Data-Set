@@ -122,6 +122,11 @@ rowsMissingValues = apply(X=aux, MARGIN=1,
 length(rowsMissingValues[rowsMissingValues > 0])
 ```
 
+En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 datos de entrenamiento, perder 2399 no supone una gran diferencia. Por tanto, lo más sencillo es eliminar las filas que contengan algún dato perdido.
+
+```{r}
+adult.train.clean = mapply(x=1:nrow(adult.train), y = rowsMissingValues, FUN = function(x,y) if(y == 0){adult.train[x,]})
+```
 
 # Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
