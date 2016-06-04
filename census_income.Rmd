@@ -96,6 +96,12 @@ Los atributos de los que disponemos son:
 
 ## Enfoque elegido
 
+El enfoque que usaremos para predecir la variable *income* es realizar tres modelos diferentes, cada uno con sus ventajas y desventajas, siendo uno un modelo ___paramétrico___, un modelo ___KNN___ y un modelo basado en una ___red neuronal multicapa___.
+
+  * ___Modelo paramétrico___: el modelo elegido en este caso es __Random Forest__. La modificación de los parámetros se realizará mediante validación cruzada, para estimar los parámetros de la mejor forma posible.
+  * ___Función de base radial___: en este caso, usaremos un modelo de __Support Vector Machine__, el cual, tendrá un kernel con una función de base radial. 
+  * ___Red neuronal multicapa___
+
 # Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
 ## Valores perdidos
@@ -131,7 +137,7 @@ length(rowsMissingValues[rowsMissingValues > 0])
 En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 datos de entrenamiento, perder 2399 no supone una gran diferencia. Por tanto, lo más sencillo es eliminar las filas que contengan algún dato perdido.
 
 ```{r}
-adult.train = adult.train[rowsMissingValues == 0,]
+adult.train.clean = adult.train[rowsMissingValues == 0,]
 ```
 
 # Valoración del interés de las variables para el problema y selección de un subconjunto
