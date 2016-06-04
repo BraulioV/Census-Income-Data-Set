@@ -15,7 +15,8 @@
 .httr-oauth
 
 # LaTeX
-.pdf
+*.pdf
+census_income.pdf
 
 # RMarkdown
 .rdb
