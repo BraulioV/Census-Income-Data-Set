@@ -108,16 +108,16 @@ adult.train <- read.csv("./Data/adult.data", header=FALSE, col.names = c("age","
 Una vez leídos, calculamos el número de variables perdidas en cada columna:
 
 ```{r}
-apply(X=adult.train, MARGIN=2, FUN=function(columna) length(is.na(columna)))
+apply(X=adult.train, MARGIN=2, FUN=function(columna) length(is.na(columna)[is.na(columna)==T]))
 ```
 
-En todas las columnas hay el mismo número de variables pérdidas.
+Sólo tienen valores perdidos los atributos _workclass_, _occupation_ y _country_.
 
 También, vamos a comprobar el número de instancias que contienen algún dato perdido. Como ya hemos visto que los datos perdidos sólo se encuentran en las columnas *workclass*, *occupation* y *country*, nos fijaremos sólo en esas. Para ello, vamos a realizar lo siguiente:
 
 ```{r}
 aux = is.na(adult.train)*1
-rowsMissingValues = apply(X=x, MARGIN=1,
+rowsMissingValues = apply(X=aux, MARGIN=1,
          FUN = function(fila) sum(fila))
 length(rowsMissingValues[rowsMissingValues > 0])
 ```
