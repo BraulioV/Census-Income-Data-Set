@@ -26,6 +26,8 @@ knitr::opts_chunk$set(
 
 # Definición del problema a resolver y enfoque elegido
 
+## Definición del problema
+
 La base de datos escogida se denomina _Census Income_, aunque también es conocida como _Adult_. Se puede descargar [aquí](http://archive.ics.uci.edu/ml/datasets/Census+Income "aqui"). Esta base de datos tiene 48842 instancias, cada una con 14 atributos. El problema es que también tiene valores perdidos.
 
 El problema consiste en predecir cuando una persona va a gastarse más de $50K basándonos en los datos del censo. Por tanto, estamos ante un problema de _clasificación_.
@@ -92,6 +94,10 @@ Los atributos de los que disponemos son:
 
 * ___income___: corresponde al valor que queremos predecir, puede tomar los valores "<=50K" o ">50K"
 
+## Enfoque elegido
+
+# Codificación de los datos de entrada para hacerlos útiles a los algoritmos
+
 ## Valores perdidos
 
 Respecto a los valores perdidos, podríamos tomar tres enfoques diferentes: sustituirlos por una media, eliminar todas las filas que contengan algún valor perdido o no usar las variables que contengan valores perdidos. Para tomar esta decisión, primero hemos de estudiar el porcentaje de valores perdidos que presentan los datos.
@@ -127,8 +133,6 @@ En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 dat
 ```{r}
 adult.train = adult.train[rowsMissingValues == 0,]
 ```
-
-# Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
 # Valoración del interés de las variables para el problema y selección de un subconjunto
 
