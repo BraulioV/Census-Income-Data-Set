@@ -17,6 +17,7 @@
 # LaTeX
 *.pdf
 census_income.pdf
+.pdf
 
 # RMarkdown
 .rdb
