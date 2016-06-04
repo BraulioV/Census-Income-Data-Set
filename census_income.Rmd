@@ -113,6 +113,16 @@ apply(X=adult.train, MARGIN=2, FUN=function(columna) length(is.na(columna)))
 
 En todas las columnas hay el mismo número de variables pérdidas.
 
+También, vamos a comprobar el número de instancias que contienen algún dato perdido. Como ya hemos visto que los datos perdidos sólo se encuentran en las columnas *workclass*, *occupation* y *country*, nos fijaremos sólo en esas. Para ello, vamos a realizar lo siguiente:
+
+```{r}
+aux = is.na(adult.train)*1
+rowsMissingValues = apply(X=x, MARGIN=1,
+         FUN = function(fila) sum(fila))
+length(rowsMissingValues[rowsMissingValues > 0])
+```
+
+
 # Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
 # Valoración del interés de las variables para el problema y selección de un subconjunto
