@@ -11,6 +11,8 @@ output:
     number_sections: yes
     toc: yes
     highlight: pygments
+bibliography: bibliografia.bib
+csl: ieee-with-url.csl
 ---
 
 ```{r setup, include=FALSE}
@@ -24,15 +26,54 @@ knitr::opts_chunk$set(
 
 # Definición del problema a resolver y enfoque elegido
 
-La base de datos escogida se denomina _Census Income_, aunque también es conocida como _Adult_. Se puede descargar [aquí](http://archive.ics.uci.edu/ml/datasets/Census+Income "aqui"). Esta base de datos tiene 48842 instancias, cada una con 14 atributos. El problema es que también tiene valores perdidos. Para este trabajo, usaremos el paquete de `R` llamado `arules`, que contiene incluye esta base de datos.
+La base de datos escogida se denomina _Census Income_, aunque también es conocida como _Adult_. Se puede descargar [aquí](http://archive.ics.uci.edu/ml/datasets/Census+Income "aqui"). Esta base de datos tiene 48842 instancias, cada una con 14 atributos. El problema es que también tiene valores perdidos.
 
 El problema consiste en predecir cuando una persona va a gastarse más de $50K basándonos en los datos del censo. Por tanto, estamos ante un problema de _clasificación_.
 
 Los atributos de los que disponemos son:
 
-(Marta hace desde age hasta ocupation y Braulio desde relationship hasta income).
+* ___age___: atributo numérico que expresa la edad de la persona.
 
-* _age_: 
+* ___workclass___: atributo categórico que expresa el tipo de empleo que tiene la persona. Los valores que puede tomar son:
+
+    * _Private_: persona contratada en una empresa privada.
+    
+    * _Self-emp-not-inc_: autónomo.
+    
+    * _Self-emp-inc_: persona que tiene una empresa grande.
+    
+    * _Federal-gov_: funcionario del gobierno federal.
+    
+    * _Local-gov_: funcionario del gobierno local.
+    
+    * _State-gov_: funcionario del gobierto estatal.
+    
+    * _Without-pay_: persona en paro.
+    
+    * _Never-worked_: persona que nunca ha trabajado.
+    
+* ___fnlwgt (final weight)___: variable numérica que representa un peso, cada peso corresponde a una característica socio-económica de la población, por tanto, personas con características demográficas parecidas deben tener un peso parecido. [@fnlwgt]
+
+* ___education___: variable categórica que representa el nivel de estudios de la persona. Los valores que puede tomar son: _Bachelors_, _Some-college_, _11th_, _HS-grad_, _Prof-school_, _Assoc-acdm_, _Assoc-voc_, _9th_, _7th-8th_, _12th_, _Masters_, _1st-4th_, _10th_, _Doctorate_, _5th-6th_, _Preschool_.
+
+* ___education-num___: variable númerica que representa a la anterior.
+
+* ___marital-status___: variable categórica que expresa el estado sentimental de la persona. Los valores que puede tomar son: 
+
+    * _Married-civ-spouse_: la persona está casada con un civil.
+    
+    * _Divorced_: la persona está divorciada.
+    
+    * _Never-married_: la persona nunca ha estado casada.
+    
+    * _Separated_: la persona está separada.
+    
+    * _Widowed_: la persona es viuda.
+    
+    * _Married-spouse-absent_: la persona aparece como casada en el registro, pero no se encuentra a ninguna pareja [@maritalstatus].
+    
+    * _Married-AF-spouse_: la persona está casada con alguien de las fuerzas armadas.
+
 
 # Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
@@ -61,3 +102,5 @@ Los atributos de los que disponemos son:
 ## Error de generalización del modelo
 
 ## Curva de aprendizaje del modelo
+
+# Referencias
