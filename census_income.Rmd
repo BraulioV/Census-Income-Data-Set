@@ -105,10 +105,15 @@ Respecto a los valores perdidos, podríamos tomar tres enfoques diferentes: sust
 Para ello, en primer lugar leemos los datos. 
 
 ```{r}
-adult.train <- read.csv("./Data/adult.data", header=FALSE, col.names = c("age","workclass", 
-        "fnlwgt","education","education-num","marital-status","occupation","relationship",
-        "race","sex","capital-gain","capital-loss","hours-per-week","country","income"), 
-        na.strings = c(" ?", "?"))
+leer_datos <- function(fichero = "./Data/adult.data") {
+    adult.train <- read.csv(fichero, header=FALSE, col.names = c("age","workclass", 
+            "fnlwgt","education","education-num","marital-status","occupation","relationship",
+            "race","sex","capital-gain","capital-loss","hours-per-week","country","income"), 
+            na.strings = c(" ?", "?"))
+}
+
+adult.train <- leer_datos()
+adult.test <- leer_datos(fichero = "./Data/adult.test")
 ```
 
 Una vez leídos, calculamos el número de variables perdidas en cada columna:
@@ -122,16 +127,21 @@ Sólo tienen valores perdidos los atributos _workclass_, _occupation_ y _country
 También, vamos a comprobar el número de instancias que contienen algún dato perdido. Como ya hemos visto que los datos perdidos sólo se encuentran en las columnas *workclass*, *occupation* y *country*, nos fijaremos sólo en esas. Para ello, vamos a realizar lo siguiente:
 
 ```{r}
-aux = is.na(adult.train)*1
-rowsMissingValues = apply(X=aux, MARGIN=1,
-         FUN = function(fila) sum(fila))
-length(rowsMissingValues[rowsMissingValues > 0])
+get_rows_na <- function(datos = adult.train) {
+    aux = is.na(datos)*1
+    rowsMissingValues = apply(X=aux, MARGIN=1,
+             FUN = function(fila) sum(fila))
+}
+
+rowsMissingValues.train = get_rows_na()
+length(rowsMissingValues.train[rowsMissingValues.train > 0])
 ```
 
-En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 datos de entrenamiento, perder 2399 no supone una gran diferencia. Por tanto, lo más sencillo es eliminar las filas que contengan algún dato perdido.
+En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 datos de entrenamiento, perder 2399 no supone una gran diferencia. Por tanto, lo más sencillo es eliminar las filas que contengan algún dato perdido. Este mismo planteamiento es usado con los datos de test, donde tenemos 16282 filas en total, de las cuales 1222 presentan datos perdidos.
 
 ```{r}
-adult.train = adult.train[rowsMissingValues == 0,]
+adult.train.clean = adult.train[rowsMissingValues.train == 0,]
+adult.test.clean = adult.test[get_rows_na(datos = adult.test) == 0,]
 ```
 
 # Valoración del interés de las variables para el problema y selección de un subconjunto
