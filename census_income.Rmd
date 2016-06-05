@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
 
 ## Definición del problema
 
-La base de datos escogida se denomina _Census Income_, aunque también es conocida como _Adult_. Se puede descargar [aquí](http://archive.ics.uci.edu/ml/datasets/Census+Income "aqui"). Esta base de datos tiene 48842 instancias, cada una con 14 atributos. El problema es que también tiene valores perdidos.
+La base de datos escogida se denomina _Census Income_, aunque también es conocida como _Adult_ [@Lichman:2013]. Se puede descargar [aquí](http://archive.ics.uci.edu/ml/datasets/Census+Income "aqui"). Esta base de datos tiene 48842 instancias, cada una con 14 atributos. El problema es que también tiene valores perdidos.
 
 El problema consiste en predecir cuando una persona va a gastarse más de $50K basándonos en los datos del censo. Por tanto, estamos ante un problema de _clasificación_.
 
