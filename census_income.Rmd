@@ -146,12 +146,8 @@ length(rowsMissingValues.train[rowsMissingValues.train > 0])
 En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 datos de entrenamiento, perder 2399 no supone una gran diferencia. Por tanto, lo más sencillo es eliminar las filas que contengan algún dato perdido. Este mismo planteamiento es usado con los datos de test, donde tenemos 16282 filas en total, de las cuales 1222 presentan datos perdidos.
 
 ```{r}
-<<<<<<< HEAD
 adult.train.clean = adult.train[rowsMissingValues.train == 0,]
 adult.test.clean = adult.test[get_rows_na(datos = adult.test) == 0,]
-=======
-adult.train.clean = adult.train[rowsMissingValues == 0,]
->>>>>>> 5d034c605146e8678345d77c9fa38761051b8c04
 ```
 
 # Valoración del interés de las variables para el problema y selección de un subconjunto
