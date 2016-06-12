@@ -186,6 +186,8 @@ Respecto a los datos que tenemos (30162 datos de entrenamiento y 15060 datos de 
 
 ## Aplicación del modelo *Random Forest*
 
+Para ajustar un modelo *Random Forest*, haremos uso del paquete 
+
 <!-- # Normalización de las variables -->
 
 <!-- # Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas -->
