@@ -96,7 +96,7 @@ Los atributos de los que disponemos son:
 
 ## Enfoque elegido
 
-El enfoque que usaremos para predecir la variable *income* es realizar tres modelos diferentes, cada uno con sus ventajas y desventajas, siendo uno un modelo ___paramétrico___, un modelo ___vecino más cercano___ y un modelo basado en una ___red neuronal multicapa___. En el caso del modelo parámetrico, usaremos un modelo __Random Forest__, ya que obtiene un modelo que se ajusta muy bien a los datos, y además, `R` proporciona mecanismos para poder ajustar los parámetros óptimos y así no tener sobreajuste.
+El enfoque que usaremos para predecir la variable *income* es realizar tres modelos diferentes, cada uno con sus ventajas y desventajas, siendo uno un modelo ___paramétrico___, un modelo ___de base radial___ y un modelo basado en una ___red neuronal multicapa___. En el caso del modelo parámetrico, usaremos un modelo __Random Forest__, ya que obtiene un modelo que se ajusta muy bien a los datos, y además, `R` proporciona mecanismos para poder ajustar los parámetros óptimos y así no tener sobreajuste.
 
 # Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
@@ -174,28 +174,31 @@ adult.train.clean[,"education.num"] = NULL
 adult.test.clean[,"education.num"] = NULL
 ```
 
-# Normalización de las variables
+# Ajustando un modelo _Random Forest_
 
-# Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas
 
-# Aplicación de la técnica
+<!-- # Normalización de las variables -->
 
-## Estimación de los parámetros
+<!-- # Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas -->
 
-## Estimación de los hiperparámetros
+<!-- # Aplicación de la técnica -->
 
-## Error de generalización
+<!-- ## Estimación de los parámetros -->
 
-# Idoneidad de la función de regularización usada
+<!-- ## Estimación de los hiperparámetros -->
 
-# Valoración de resultados
+<!-- ## Error de generalización -->
 
-# Justificación de la solución obtenida en base a la ténica usada y los datos.
+<!-- # Idoneidad de la función de regularización usada -->
 
-## Dimensión VC del modelo
+<!-- # Valoración de resultados -->
 
-## Error de generalización del modelo
+<!-- # Justificación de la solución obtenida en base a la ténica usada y los datos. -->
 
-## Curva de aprendizaje del modelo
+<!-- ## Dimensión VC del modelo -->
+
+<!-- ## Error de generalización del modelo -->
+
+<!-- ## Curva de aprendizaje del modelo -->
 
 # Referencias
