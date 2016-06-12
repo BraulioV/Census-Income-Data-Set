@@ -96,11 +96,7 @@ Los atributos de los que disponemos son:
 
 ## Enfoque elegido
 
-El enfoque que usaremos para predecir la variable *income* es realizar tres modelos diferentes, cada uno con sus ventajas y desventajas, siendo uno un modelo ___paramétrico___, un modelo ___KNN___ y un modelo basado en una ___red neuronal multicapa___.
-
-  * ___Modelo paramétrico___: el modelo elegido en este caso es __Random Forest__. La modificación de los parámetros se realizará mediante validación cruzada, para estimar los parámetros de la mejor forma posible.
-  * ___Función de base radial___: en este caso, usaremos un modelo de __Support Vector Machine__, el cual, tendrá un kernel con una función de base radial. 
-  * ___Red neuronal multicapa___
+El enfoque que usaremos para predecir la variable *income* es realizar tres modelos diferentes, cada uno con sus ventajas y desventajas, siendo uno un modelo ___paramétrico___, un modelo ___vecino más cercano___ y un modelo basado en una ___red neuronal multicapa___. En el caso del modelo parámetrico, usaremos un modelo __Random Forest__, ya que obtiene un modelo que se ajusta muy bien a los datos, y además, `R` proporciona mecanismos para poder ajustar los parámetros óptimos y así no tener sobreajuste.
 
 # Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
@@ -115,7 +111,7 @@ leer_datos <- function(fichero = "./Data/adult.data") {
     adult.train <- read.csv(fichero, header=FALSE, col.names = c("age","workclass", 
             "fnlwgt","education","education-num","marital-status","occupation","relationship",
             "race","sex","capital-gain","capital-loss","hours-per-week","country","income"), 
-            na.strings = c(" ?", "?"))
+            na.strings = c(" ?", "?"), stringsAsFactors = T)
 }
 
 adult.train <- leer_datos()
@@ -150,7 +146,33 @@ adult.train.clean = adult.train[rowsMissingValues.train == 0,]
 adult.test.clean = adult.test[get_rows_na(datos = adult.test) == 0,]
 ```
 
-# Valoración del interés de las variables para el problema y selección de un subconjunto
+## Asignación de valores numéricos a los valores categóricos
+
+Al cargar el fichero de datos hemos usado la opción `stringsAsFactors`. Esta función sirve para convertir todas las cadenas de carácteres en factores. Los factores, tal y como se explica en [@factores], asignan a cada posible valor que puede tomar una variable categórica un número. Los factores representan una forma de almacenamiento muy eficiente, ya que las cadenas de carácteres correspondientes sólo se almacenan una vez y los valores se guardan como enteros.
+
+Por ejemplo, los números asociados a la variable `workclass` corresponden con el orden mostrado por la función `levels`. Así, al primer elemento se le asigna el número uno, al siguiente el dos, etc.
+
+```{r}
+levels(adult.train.clean$workclass)
+```
+
+Para ver el vector numérico almacenado por `R` en vez de el vector con las cadenas de caracteres usamos la función `c`:
+
+```{r}
+head(c(adult.train.clean$workclass))
+head(adult.train.clean$workclass)
+```
+
+Como vemos, los números asignados a los primeros elementos coinciden con el orden mostrado anteriormente.
+
+## Eliminando la variable `education.num`
+
+Aunque cada problema tenga su propio método para escoger y normalizar variables, hemos considerado que la variable `education.num` no nos va a servir, ya que es únicamente una asignación numérica de los valores categóricos de la variable `education`. Al haber almacenado la variable `education` como factor, ya tiene una asignación numérica hecha, y por tanto, eliminamos la variable `education.num`:
+
+```{r}
+adult.train.clean[,"education.num"] = NULL
+adult.test.clean[,"education.num"] = NULL
+```
 
 # Normalización de las variables
 
