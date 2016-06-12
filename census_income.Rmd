@@ -176,6 +176,15 @@ adult.test.clean[,"education.num"] = NULL
 
 # Ajustando un modelo _Random Forest_
 
+## Idoneidad del modelo *Random Forest* para los datos del problema
+
+Como modelo paramétrico, el árbol es capaz de clasificar los datos con cierta precisión y tiene la ventaja de que por sí solo, es capaz de explicar bastante bien la clasificación que ha hecho. Pero, utilizar un sólo árbol no ofrece la potencia necesaria para ajustarse lo suficientemente bien a los datos, además de que sufre de tener una alta variabilidad, ya que si particionamos los datos aleatoriamente en subconjuntos, podemos obtener resultados muy diferentes si aprendemos el modelo con un subconjunto u otro, y por ello usaremos el modelo *Random Forest*, que aunque pierda las facilidades de comprensión que tiene un árbol, nos ofrece un poder de ajuste muchísimo mayor, y un poder de generalización mayor.
+
+El porqué de usar *Random Forest* frente a un modelo *Bagging* es que con este último, tenemos que aprender el modelo usando las $p$ variables predictoras, mientras que con *Random Forest* podemos usar un subconjunto de tamaño $m$. *Bagging*, al hacer uso de los $p$ predictores, en el caso de que haya una variable predictora muy fuerte en los datos, todos los árboles que se acaben generando, tendrán esta variable predictora en los primeros nodos del árbol, mientras que al usar varios subconjuntos de los $p$ predictores de tamaño $m$ escogidos de forma aleatoria en *Random Forest*, seremos capaces de detectar otras relaciones más débiles entre las variables predictoras pero que también son capaces de predecir los datos con exactitud.
+
+Respecto a los datos que tenemos (30162 datos de entrenamiento y 15060 datos de test)\footnote{Eliminando las instancias con valores perdidos.} tenemos suficientes datos como para que *Random Forest* trabaje de forma adecuada, y disponemos de 14 datos predictores, ya que la variable `income` es aquella que queremos predecir.
+
+## Aplicación del modelo *Random Forest*
 
 <!-- # Normalización de las variables -->
 
