@@ -186,7 +186,21 @@ Respecto a los datos que tenemos (30162 datos de entrenamiento y 15060 datos de 
 
 ## Aplicación del modelo *Random Forest*
 
-Para ajustar un modelo *Random Forest*, haremos uso del paquete 
+Para ajustar un modelo *Random Forest*, haremos uso del paquete *randomForest* de *R*.
+
+```{r}
+library(randomForest)
+
+rf.clean = randomForest(x=subset(adult.train.clean, select = -income), 
+    y = adult.train.clean$income, importance = T, mtry = sqrt(ncol(adult.train.clean)-1))
+print(rf.clean)
+
+rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), y=adult.train.clean$income, doBest=T)
+
+ypred = predict(rf.tuned, subset(adult.test.clean, select = -income))
+print(table(predict=ypred, truth=(adult.test.clean$income)))
+```
+
 
 <!-- # Normalización de las variables -->
 
