@@ -111,7 +111,7 @@ leer_datos <- function(fichero = "./Data/adult.data") {
     adult.train <- read.csv(fichero, header=FALSE, col.names = c("age","workclass", 
             "fnlwgt","education","education-num","marital-status","occupation","relationship",
             "race","sex","capital-gain","capital-loss","hours-per-week","country","income"), 
-            na.strings = c(" ?", "?"), stringsAsFactors = T)
+            na.strings = c(" ?", "?", ""), stringsAsFactors = T)
 }
 
 adult.train <- leer_datos()
