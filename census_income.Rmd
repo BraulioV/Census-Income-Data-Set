@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 	echo = TRUE,
 	message = FALSE,
 	warning = FALSE,
-	cache=TRUE
+	cache = T
 )
 ```
 
@@ -165,6 +165,33 @@ head(adult.train.clean$workclass)
 
 Como vemos, los números asignados a los primeros elementos coinciden con el orden mostrado anteriormente.
 
+## Igualando factores
+
+Para comprobar que a la hora de ajustar los modelos no tendríamos ningún problema con los datos de test y training, hemos comparado los distintos factores que tienen ambos conjuntos, para ver si hay alguno distinto:
+
+```{r}
+v = sapply(X = 1:ncol(adult.train.clean), FUN = function(x){
+    if (is.factor(adult.train.clean[,x]))
+        levels(adult.test.clean[,x]) %in% levels(adult.train.clean[,x])
+    })
+names(v) = names(adult.train.clean)
+print(v)
+```
+
+Como vemos, los nombres de los factores de la variable `income` no coinciden en los datos de test y en los de entrenamiento:
+
+```{r}
+print(levels(adult.train.clean$income))
+print(levels(adult.test.clean$income))
+```
+
+La única diferencia entre ambos es que los factores en los datos de test acaban con un punto al final. Para solucionar este problema, cambiamos la etiqueta de los factores de los datos de test:
+
+```{r}
+levels(adult.test.clean$income) = levels(adult.train.clean$income)
+print(levels(adult.test.clean$income))
+```
+
 ## Eliminando la variable `education.num`
 
 Aunque cada problema tenga su propio método para escoger y normalizar variables, hemos considerado que la variable `education.num` no nos va a servir, ya que es únicamente una asignación numérica de los valores categóricos de la variable `education`. Al haber almacenado la variable `education` como factor, ya tiene una asignación numérica hecha, y por tanto, eliminamos la variable `education.num`:
@@ -191,13 +218,15 @@ Para ajustar un modelo *Random Forest*, haremos uso del paquete *randomForest* d
 ```{r}
 library(randomForest)
 
-rf.clean = randomForest(x=subset(adult.train.clean, select = -income), 
-    y = adult.train.clean$income, importance = T, mtry = sqrt(ncol(adult.train.clean)-1))
+rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
 print(rf.clean)
 
 rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), y=adult.train.clean$income, doBest=T)
 
-ypred = predict(rf.tuned, subset(adult.test.clean, select = -income))
+print(levels(adult.test.clean$income))
+print(levels(adult.train.clean$income))
+
+ypred = predict(rf.clean, adult.test.clean)
 print(table(predict=ypred, truth=(adult.test.clean$income)))
 ```
 
