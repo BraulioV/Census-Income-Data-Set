@@ -19,8 +19,8 @@ csl: ieee-with-url.csl
 knitr::opts_chunk$set(
 	echo = TRUE,
 	message = FALSE,
-	warning = FALSE,
-	cache = T
+	warning = FALSE
+	
 )
 ```
 
