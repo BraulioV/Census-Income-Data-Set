@@ -118,6 +118,47 @@ adult.train <- leer_datos()
 adult.test <- leer_datos(fichero = "./Data/adult.test")
 ```
 
+Para evitar problemas con las funciones de $R$, forzaremos a que todos los datos categóricos, tenga el mismo $factor$. Para ello, realizaremos lo siguiente:
+
+```{r}
+# Añadimos una columna a los datos para indicar 
+# cuales pertenecen a datos de train y cuales a
+# datos de test
+
+adult.test$trainTest = rep(1,nrow(adult.test))
+adult.train$trainTest = rep(0,nrow(adult.train))
+
+# Reconstruimos el conjunto de datos al completo,
+# uniendo los datos de train y test
+
+fullSet <- rbind(adult.test,adult.train)
+
+# Cada una de las variables categóricas, pasarán 
+# de ser cadenas de caracteres a tener un valor 
+# numérico o un factor, con lo que 
+# tanto datos de train como datos de test, 
+# obtendrán el mismo factor
+
+fullSet$workclass = as.factor(fullSet$workclass)
+fullSet$country = as.factor(fullSet$country)
+fullSet$education = as.factor(fullSet$education)
+fullSet$marital.status = as.factor(fullSet$marital.status)
+fullSet$sex = as.factor(fullSet$sex)
+fullSet$relationship = as.factor(fullSet$relationship)
+fullSet$occupation = as.factor(fullSet$occupation)
+
+# Reconstruimos los datos de train y test originales
+
+adult.train = data.frame(fullSet[fullSet$trainTest == 0,])
+adult.test = data.frame(fullSet[fullSet$trainTest == 1,])
+
+# Y eliminamos la columna auxiliar
+
+adult.test$trainTest = NULL
+adult.train$trainTest = NULL
+```
+
+
 Una vez leídos, calculamos el número de variables perdidas en cada columna:
 
 ```{r}
@@ -142,40 +183,6 @@ length(rowsMissingValues.train[rowsMissingValues.train > 0])
 En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 datos de entrenamiento, perder 2399 no supone una gran diferencia. Por tanto, lo más sencillo es eliminar las filas que contengan algún dato perdido. Este mismo planteamiento es usado con los datos de test, donde tenemos 16282 filas en total, de las cuales 1222 presentan datos perdidos.
 
 ```{r}
-adult.train$workclass = as.character(adult.train$workclass)
-adult.train$country = as.character(adult.train$country)
-adult.train$education = as.character(adult.train$education)
-adult.train$marital.status = as.character(adult.train$marital.status)
-adult.train$sex = as.character(adult.train$sex)
-adult.train$relationship = as.character(adult.train$relationship)
-adult.train$occupation = as.character(adult.train$occupation)
-
-adult.test$workclass = as.character(adult.test$workclass)
-adult.test$country = as.character(adult.test$country)
-adult.test$education = as.character(adult.test$education)
-adult.test$marital.status = as.character(adult.test$marital.status)
-adult.test$sex = as.character(adult.test$sex)
-adult.test$relationship = as.character(adult.test$relationship)
-adult.test$occupation = as.character(adult.test$occupation)
-
-adult.test$trainTest = rep(1,nrow(adult.test))
-adult.train$trainTest = rep(0,nrow(adult.train))
-
-fullSet <- rbind(adult.test,adult.train)
-
-fullSet$workclass = as.factor(fullSet$workclass)
-fullSet$country = as.factor(fullSet$country)
-fullSet$education = as.factor(fullSet$education)
-fullSet$marital.status = as.factor(fullSet$marital.status)
-fullSet$sex = as.factor(fullSet$sex)
-fullSet$relationship = as.factor(fullSet$relationship)
-fullSet$occupation = as.factor(fullSet$occupation)
-
-adult.train = data.frame(fullSet[fullSet$trainTest == 0,])
-adult.test = data.frame(fullSet[fullSet$trainTest == 1,])
-
-adult.test$trainTest = NULL
-adult.train$trainTest = NULL
 adult.train.clean = adult.train[rowsMissingValues.train == 0,]
 adult.test.clean = adult.test[get_rows_na(datos = adult.test) == 0,]
 ```
@@ -198,33 +205,6 @@ head(adult.train.clean$workclass)
 ```
 
 Como vemos, los números asignados a los primeros elementos coinciden con el orden mostrado anteriormente.
-
-## Igualando factores
-
-Para comprobar que a la hora de ajustar los modelos no tendríamos ningún problema con los datos de test y training, hemos comparado los distintos factores que tienen ambos conjuntos, para ver si hay alguno distinto:
-
-```{r}
-v = sapply(X = 1:ncol(adult.train.clean), FUN = function(x){
-    if (is.factor(adult.train.clean[,x]))
-        levels(adult.test.clean[,x]) %in% levels(adult.train.clean[,x])
-    })
-names(v) = names(adult.train.clean)
-print(v)
-```
-
-Como vemos, los nombres de los factores de la variable `income` no coinciden en los datos de test y en los de entrenamiento:
-
-```{r}
-print(levels(adult.train.clean$income))
-print(levels(adult.test.clean$income))
-```
-
-La única diferencia entre ambos es que los factores en los datos de test acaban con un punto al final. Para solucionar este problema, cambiamos la etiqueta de los factores de los datos de test:
-
-```{r}
-levels(adult.test.clean$income) = levels(adult.train.clean$income)
-print(levels(adult.test.clean$income))
-```
 
 ## Eliminando la variable `education.num`
 
