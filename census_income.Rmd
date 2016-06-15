@@ -111,7 +111,7 @@ leer_datos <- function(fichero = "./Data/adult.data") {
     adult.train <- read.csv(fichero, header=FALSE, col.names = c("age","workclass", 
             "fnlwgt","education","education-num","marital-status","occupation","relationship",
             "race","sex","capital-gain","capital-loss","hours-per-week","country","income"), 
-            na.strings = c(" ?", "?", ""), stringsAsFactors = T)
+            na.strings = c(" ?", "?", ""), stringsAsFactors = F)
 }
 
 adult.train <- leer_datos()
@@ -146,6 +146,8 @@ fullSet$marital.status = as.factor(fullSet$marital.status)
 fullSet$sex = as.factor(fullSet$sex)
 fullSet$relationship = as.factor(fullSet$relationship)
 fullSet$occupation = as.factor(fullSet$occupation)
+fullSet$income = as.factor(fullSet$income)
+fullSet$race = as.factor(fullSet$race)
 
 # Reconstruimos los datos de train y test originales
 
@@ -236,9 +238,6 @@ rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
 print(rf.clean)
 
 rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), y=adult.train.clean$income, doBest=T)
-
-print(levels(adult.test.clean$income))
-print(levels(adult.train.clean$income))
 
 ypred = predict(rf.clean, adult.test.clean)
 print(table(predict=ypred, truth=(adult.test.clean$income)))
