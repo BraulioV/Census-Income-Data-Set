@@ -19,8 +19,8 @@ csl: ieee-with-url.csl
 knitr::opts_chunk$set(
 	echo = TRUE,
 	message = FALSE,
-	warning = FALSE
-	
+	warning = FALSE,
+	cache = TRUE
 )
 ```
 
@@ -229,14 +229,22 @@ Respecto a los datos que tenemos (30162 datos de entrenamiento y 15060 datos de 
 
 ## Aplicación del modelo *Random Forest*
 
-Para ajustar un modelo *Random Forest*, haremos uso del paquete *randomForest* de *R*.
+Para ajustar un modelo *Random Forest*, haremos uso del paquete *randomForest* de *R*. 
+
+En primer lugar, vamos a ajustar un modelo _Random Forest_ con el número de predictores por defecto de `R`: $m = \sqrt{p}$. Siendo $p$ el número de variables predictoras totales. Este número por defecto es el recomendado para problemas de clasificación como éste. En este caso, al tener $p = 13$, el número de predictores a usar será $m = 3$.
 
 ```{r}
 library(randomForest)
 
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
 print(rf.clean)
+```
 
+Con $m = 3$ obtenemos un modelo con un $18,18$% de error _Out-Of-Bag_. Al ajustar el modelo de Random Forest, cada uno de los árboles usa un subconjunto de los datos, y los no usados para calcular dicho árbol se quedan como _out of bag_. Una vez generados los árboles, se predice el valor de cada dato usando los árboles en los que dicho dato ha sido _out of bag_. En el caso de clasificación se hace mediante voto mayoritario. El error de clasificación obtenido para cada dato es válido, porque para predecir el dato se han usado árboles en los que el dato en cuestión no "ha participado" [@islroob].
+
+Ahora bien, ¿podemos llegar a obtener un error más bajo cambiando éste parámetro? Para ello, usamos la función `tuneRF`, que empieza en el valor por defecto de `R` y, a partir de éste, prueba con otros valores 
+
+```{r}
 rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), y=adult.train.clean$income, doBest=T)
 
 ypred = predict(rf.clean, adult.test.clean)
