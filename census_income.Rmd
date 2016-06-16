@@ -242,15 +242,38 @@ print(rf.clean)
 
 Con $m = 3$ obtenemos un modelo con un $18,18$% de error _Out-Of-Bag_. Al ajustar el modelo de Random Forest, cada uno de los árboles usa un subconjunto de los datos, y los no usados para calcular dicho árbol se quedan como _out of bag_. Una vez generados los árboles, se predice el valor de cada dato usando los árboles en los que dicho dato ha sido _out of bag_. En el caso de clasificación se hace mediante voto mayoritario. El error de clasificación obtenido para cada dato es válido, porque para predecir el dato se han usado árboles en los que el dato en cuestión no "ha participado" [@islroob].
 
-Ahora bien, ¿podemos llegar a obtener un error más bajo cambiando éste parámetro? Para ello, usamos la función `tuneRF`, que empieza en el valor por defecto de `R` y, a partir de éste, prueba con otros valores 
+Respecto a la matriz de confusión generada, vemos que hay muchos más aciertos para la clase `<=50K` que para la clase `>50K`. Esto puede deberse a que el número de instancias para el la clase `<=50K` sea mucho mayor y, por tanto, el modelo tienda a clasificar los datos como `<=50K`:
+
+```{r}
+length(adult.train.clean$income[adult.train.clean$income == "<=50K"])
+length(adult.train.clean$income[adult.train.clean$income == ">50K"])
+```
+
+Como hemos dicho antes, hay una gran diferencia entre la proporción de datos para un clase y otra, esto hace que el modelo tienda a clasificar los datos como `<=50K`. De hecho, si nos fijamos en la matriz de confusión, los fallos de clasificación con `<=50K` son mucho mayores a los de `>50K`: 5442 frente a 51.
+
+Ahora bien, ¿podemos llegar a obtener un error más bajo cambiando éste parámetro? Para ello, usamos la función `tuneRF`, que empieza en el valor por defecto de `R` y, a partir de éste, prueba con otros valores hasta encontrar el óptimo. En cada iteración, incrementa o decrementa el valor de $m$ según un parámetro `stepFactor` y además, si la mejora de error obtenida no es mayor a lo indicado por el parámetro `improve`, se para la búsqueda.
 
 ```{r}
 rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), y=adult.train.clean$income, doBest=T)
+```
 
+Como vemos en la gráfica, con $m=3$ obtenemos el modelo óptimo. Por tanto, nos quedamos con el modelo generado anteriormente.
+
+Lo último que podemos preguntarnos es, ¿cómo se comporta el modelo con los datos de test? Para saberlo, generamos la tabla de confusión:
+
+```{r}
 ypred = predict(rf.clean, adult.test.clean)
 print(table(predict=ypred, truth=(adult.test.clean$income)))
 ```
 
+De los 15060 datos de test que teníamos en total, el modelo ha acertado 123313 y ha fallado 2747. Al igual que en los datos de entrenamiento, se ve una mayoría de datos con clase `<=50K`. Aunque a la hora de los errores, ha habido más errores clasificando instancias `<=50K`: 34 frente a 2713.
+
+```{r}
+length(adult.test.clean$income[adult.test.clean$income == "<=50K"])
+length(adult.test.clean$income[adult.test.clean$income == ">50K"])
+```
+
+Al haber esta diferencia en los datos de entrenamiento y test, los modelos obtenidos se ven muy afectados.
 
 <!-- # Normalización de las variables -->
 
