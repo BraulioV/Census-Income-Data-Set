@@ -342,8 +342,14 @@ normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlw
     maxs = apply(X=cols_numericas, MARGIN=2, FUN=max)
     mins = apply(X=cols_numericas, MARGIN=2, FUN=min)
     # aplicamos el escalado
-    as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs))
+    datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs))
+    for (c in numbercols)
+        data[c] = datos_normalizados_numericos[c]
+    data
 }
+
+adult.train.clean.normalized = normalizar_maxmin()
+adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean)
 ```
 
 <!-- # Normalización de las variables -->
