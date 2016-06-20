@@ -299,10 +299,17 @@ donde $x$ representa el vector de datos originales y $z$ el vector de datos norm
 
 ```{r}
 normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) {
+    # nos quedamos sólo con las columnas numéricas
     cols_numericas = subset(data, select=numbercols)
-    maxs = apply()
+    # calculamos el máximo y el mínimo de cada columna
+    maxs = apply(X=cols_numericas, MARGIN=2, FUN=max)
+    mins = apply(X=cols_numericas, MARGIN=2, FUN=min)
+    # aplicamos el escalado
+    as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs))
 }
 ```
+
+
 
 ### Modelo
 
