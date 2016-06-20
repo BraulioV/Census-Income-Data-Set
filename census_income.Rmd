@@ -249,7 +249,12 @@ Como podemos ver, el error que genera la regresión lineal, tomando todas las va
 
 ```{r}
 library(boot)
-cvGlmModel = cv.glm(data = adult.train.clean,  glmfit = glmModel, K = 10)
+
+cvGlmModel = try(cv.glm(data = adult.train.clean,  glmfit = glmModel, K = 10))
+
+while ( inherits(cvGlmModel, "try-error") ) {
+  cvGlmModel = try(cv.glm(data = adult.train.clean,  glmfit = glmModel, K = 10)) 
+}
 ```
 
 
