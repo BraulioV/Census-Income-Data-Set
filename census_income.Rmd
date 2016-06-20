@@ -245,18 +245,12 @@ glmModel = glm(income ~ ., data = adult.train.clean, family = "binomial")
 predictorGLM(glmModel, pintar=F)
 ```
 
-Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24\%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a tratar de mejorar el modelo, haciendo uso de la validación cruzada.
+Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a tratar de mejorar el modelo, haciendo uso de la validación cruzada.
 
 ```{r}
 library(boot)
 
-<<<<<<< HEAD
-cvGlmModel = try(cv.glm(data = adult.train.clean,  glmfit = glmModel, K = 10))
-
-cvGlmModel = try(cv.glm(data = adult.train.clean,  glmfit = glmModel, K = 10)) 
-=======
 cvGlmModel = cv.glm(data = adult.train.clean,  glmfit = glmModel, K = 5)
->>>>>>> 047e407e96e3283f99c0fee304e689225e7a9aa1
 ```
 
 
