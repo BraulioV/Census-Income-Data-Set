@@ -291,6 +291,21 @@ Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr]
 
 En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`. 
 
+Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos:
+
+$$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$
+
+donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`:
+
+```{r}
+normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) {
+    cols_numericas = subset(data, select=numbercols)
+    maxs = apply()
+}
+```
+
+### Modelo
+
 ```{r}
 library(nnet)
 
