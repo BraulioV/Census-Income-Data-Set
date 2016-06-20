@@ -217,6 +217,42 @@ adult.train.clean[,"education.num"] = NULL
 adult.test.clean[,"education.num"] = NULL
 ```
 
+# Ajustando un modelo lineal
+
+Antes de pasar a modelos más complejos, vamos a comprobar cómo se comporta un modelo lineal. Esto es así, ya que la complejidad de un modelo lineal es bastante menor que a la de los otros modelos que se usarán a continuación, y si es capaz de ajustar bastante mejor los datos que el resto de modelos, se escogería este.
+
+Para ello, nos vamos a basar en un modelo que utiliza la regresión logística para este problema. Este modelo, nos devuelve la probabilidad de pertenecer a una clase u otra. Usando el concepto de \textit{maximum likelihood} o máxima probabilidad, asigna a los datos la clase a la que es más probable que pertenezca, de acuerdo a la probabilidad que calcula el modelo. 
+
+Estas probabilidades se obtienen a partir de la siguiente expresión:
+$$ P(y|x) = \theta(yw^Tx)$$
+donde $\theta$ es la función logística, $y$ es la etiqueta del modelo, $w$ es nuestro vector de pesos asociado, y $x$ los datos predictores. Esta función es la que usaremos para crear un modelo de estimación del error, y trataremos de minimizar ese error, que lo calcularemos de la siguiente forma [@lfd]:
+$$E_{in} = \frac{1}{N}\sum_{n=1}^N\ln\left(\frac{1}{\theta(y_nw^Tx_n)} \right) = \frac{1}{N}\sum_{n=1}^N\ln\left(1 + e^{-y_nw^Tx_n}\right)$$
+
+```{r}
+library(glmnet)
+
+predictorGLM <- function(model, pintar = T){
+  ypred = predict(model, adult.test.clean, type="response")
+  ypred[ypred <= 0.5] = ">50K"
+  ypred[ypred > 0.5] = "<=50K"
+
+  if(pintar)
+    print(table(predict=ypred, truth=(adult.test.clean$income)))
+  cat("Eout = ",mean((ypred != adult.test.clean$income)*1))
+}
+
+glmModel = glm(income ~ ., data = adult.train.clean, family = "binomial")
+predictorGLM(glmModel, pintar=F)
+```
+
+Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24\%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a tratar de mejorar el modelo, haciendo uso de la validación cruzada.
+
+```{r}
+library(boot)
+cvGlmModel = cv.glm(data = adult.train.clean,  glmfit = glmModel, K = 10)
+```
+
+
 # Ajustando un modelo _Random Forest_
 
 ## Idoneidad del modelo *Random Forest* para los datos del problema
@@ -262,8 +298,11 @@ Como vemos en la gráfica, con $m=3$ obtenemos el modelo óptimo. Por tanto, nos
 Lo último que podemos preguntarnos es, ¿cómo se comporta el modelo con los datos de test? Para saberlo, generamos la tabla de confusión:
 
 ```{r}
+# Primer modelo Random Forest
 ypred = predict(rf.clean, adult.test.clean)
 print(table(predict=ypred, truth=(adult.test.clean$income)))
+# Segundo modelo Random Forest con validación cruzada
+
 ```
 
 De los 15060 datos de test que teníamos en total, el modelo ha acertado 123313 y ha fallado 2747. Al igual que en los datos de entrenamiento, se ve una mayoría de datos con clase `<=50K`. Aunque a la hora de los errores, ha habido más errores clasificando instancias `<=50K`: 34 frente a 2713.
@@ -281,11 +320,11 @@ Al haber esta diferencia en los datos de entrenamiento y test, los modelos obten
 
 ## Aplicación del modelo de _Red Neuronal_
 
-```{r}
-library(nnet)
+<!-- ```{r} -->
+<!-- library(nnet) -->
 
-nnet(formula = income ~ ., data = adult.train.clean)
-```
+<!-- nnet(formula = income ~ ., data = adult.train.clean) -->
+<!-- ``` -->
 
 <!-- # Normalización de las variables -->
 
