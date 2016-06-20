@@ -279,7 +279,17 @@ Al haber esta diferencia en los datos de entrenamiento y test, los modelos obten
 
 ## Idoneidad del modelo de _Red Neuronal_ para los datos del problema
 
+La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es cierto que puede llegar a tener algo de sobreajuste, pero podemos usar regualización con _early stopping_ o _weight decay_ para evitar esto. 
+
+El número de _unidades ocultas_ de la _Red Neuronal_ es uno de los parámetros con el que más pruebas haremos, ya que con un número grande de capas tenemos la suficiente flexibilidad como para poder capturar la función $g$ que mejor se ajusta a los datos.
+
 ## Aplicación del modelo de _Red Neuronal_
+
+Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr] para complementar la teoría aprendida en la asignatura.
+
+### Normalización de los datos
+
+En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`. 
 
 ```{r}
 library(nnet)
