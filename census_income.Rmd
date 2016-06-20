@@ -275,6 +275,18 @@ length(adult.test.clean$income[adult.test.clean$income == ">50K"])
 
 Al haber esta diferencia en los datos de entrenamiento y test, los modelos obtenidos se ven muy afectados.
 
+# Ajustando un modelo de _Red Neuronal_
+
+## Idoneidad del modelo de _Red Neuronal_ para los datos del problema
+
+## Aplicación del modelo de _Red Neuronal_
+
+```{r}
+library(nnet)
+
+nnet(formula = income ~ ., data = adult.train.clean)
+```
+
 <!-- # Normalización de las variables -->
 
 <!-- # Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas -->
