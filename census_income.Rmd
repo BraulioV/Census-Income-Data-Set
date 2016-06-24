@@ -247,10 +247,10 @@ predictorGLM(glmModel, pintar=F)
 
 Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a tratar de mejorar el modelo, haciendo uso de la validación cruzada.
 
-<!-- ```{r} -->
-<!-- # library(boot) -->
-<!-- # cvGlmModel = cv.glm(data = adult.train.clean, glmfit = glmModel, K = 5) -->
-<!-- ``` -->
+```{r}
+library(boot)
+cvGlmModel = cv.glm(data = adult.train.clean, glmfit = glmModel, K = 5)
+```
 
 
 # Ajustando un modelo _Random Forest_
@@ -325,8 +325,6 @@ Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades 
 
 ## Aplicación del modelo de _Red Neuronal_
 
-Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr] para complementar la teoría aprendida en la asignatura.
-
 ### Normalización de los datos
 
 En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`. 
@@ -357,15 +355,36 @@ adult.train.clean.normalized = normalizar_maxmin()
 adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean)
 ```
 
-## Parámetros del modelo
+## Parámetros e Hiperparámetros del modelo
 
 Para elegir los parámetros, vamos a seguir los consejos dados en [@estadisticosinr]:
 
 * ___Pesos iniciales___: los pesos iniciales serán números aleatorios cercanos a cero. Así, el modelo empezará de forma lineal pero se transformará en uno no lineal conforme los pesos aumenten. Si se empezase con pesos exactamente cero, el algoritmo no sería capaz de moverse, ya que estaríamos haciendo derivadas por cero. Empezar con pesos muy grandes suele llevar a soluciones malas.
 
-* ___Regularización___: al tener tantos pesos, las redes neuronales pueden sobreajustar los datos en un mínimo local. Para evitar esto, como hemos dicho antes, podemos usar _early stopping_ o _weight decay_.
+* ___Regularización___: al tener tantos pesos, las redes neuronales pueden sobreajustar los datos en un mínimo local. Para evitar esto, como hemos dicho antes, podemos usar _early stopping_ o _weight decay_. 
 
-* ___Número de capas ocultas___: 
+* ___Número de capas ocultas___: es recomendable tener entre 5 y 100 capas, para que el modelo pueda tener flexibilidad suficiente. La regularización se encarga de dejar a 0 aquellos pesos que lleven a sobreajusar el modelo.
+
+<!-- ```{r} -->
+<!-- library(RSNNS) -->
+<!-- attach(adult.train.clean.normalized) -->
+
+<!-- mlp(x = subset(adult.train.clean.normalized, select = -income), y = income) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- library(neuralnet) -->
+
+<!-- m <- model.matrix(object = ~ income + age + workclass + fnlwgt + education + marital.status + occupation + relationship + race + sex + capital.gain + capital.loss + hours.per.week, data = adult.train.clean.normalized) -->
+
+<!-- n <- neuralnet(formula = income ~ (age + workclass + fnlwgt + education + marital.status + occupation + relationship + race + sex + capital.gain + capital.loss + hours.per.week), data = m, hidden = 13, stepmax = 200) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- library(nnet) -->
+
+<!-- nnet(formula = income ~ ., data = adult.train.clean, size = 5, decay=0.01) -->
+<!-- ``` -->
 
 <!-- # Normalización de las variables -->
 
