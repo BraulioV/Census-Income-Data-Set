@@ -352,68 +352,68 @@ svmModel = svm(income ~ ., data = adult.train.clean, kernel = "radial")
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 
-<!-- # Ajustando un modelo de _Red Neuronal_ -->
+# Ajustando un modelo de _Red Neuronal_
 
-<!-- ## Idoneidad del modelo de _Red Neuronal_ para los datos del problema -->
+## Idoneidad del modelo de _Red Neuronal_ para los datos del problema
 
-<!-- La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es tal la flexibilidad que ofrece el modelo, que ofrece una gran potencia para ajustar los datos y capacidad para crear un modelo muy competitivo, pero tienen un alto coste a pagar, y es que el sobreajuste a los datos está practicamente servido de entrada en el modelo. Este sobreajuste se puede aliviar algo y usar regularización con _early stopping_ o _weight decay_. -->
+La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es tal la flexibilidad que ofrece el modelo, que ofrece una gran potencia para ajustar los datos y capacidad para crear un modelo muy competitivo, pero tienen un alto coste a pagar, y es que el sobreajuste a los datos está practicamente servido de entrada en el modelo. Este sobreajuste se puede aliviar algo y usar regularización con _early stopping_ o _weight decay_.
 
-<!-- Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos. -->
+Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos.
 
-<!-- ## Aplicación del modelo de _Red Neuronal_ -->
+## Aplicación del modelo de _Red Neuronal_
 
-<!-- Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr] para complementar la teoría aprendida en la asignatura. -->
+Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr] para complementar la teoría aprendida en la asignatura.
 
-<!-- ### Normalización de los datos -->
+### Normalización de los datos
 
-<!-- En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`.  -->
+En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`.
 
-<!-- Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos: -->
+Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos:
 
-<!-- $$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$ -->
+$$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$
 
-<!-- donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`: -->
+donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`:
 
-<!-- ```{r} -->
-<!-- normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) { -->
-<!--     # nos quedamos sólo con las columnas numéricas -->
-<!--     cols_numericas = subset(data, select=numbercols) -->
-<!--     # calculamos el máximo y el mínimo de cada columna -->
-<!--     maxs = apply(X=cols_numericas, MARGIN=2, FUN=max) -->
-<!--     mins = apply(X=cols_numericas, MARGIN=2, FUN=min) -->
-<!--     # aplicamos el escalado -->
-<!--     datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs)) -->
-<!--     for (c in numbercols) -->
-<!--         data[c] = datos_normalizados_numericos[c] -->
-<!--     data -->
-<!-- } -->
+```{r}
+normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) {
+    # nos quedamos sólo con las columnas numéricas
+    cols_numericas = subset(data, select=numbercols)
+    # calculamos el máximo y el mínimo de cada columna
+    maxs = apply(X=cols_numericas, MARGIN=2, FUN=max)
+    mins = apply(X=cols_numericas, MARGIN=2, FUN=min)
+    # aplicamos el escalado
+    datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs))
+    for (c in numbercols)
+        data[c] = datos_normalizados_numericos[c]
+    data
+}
 
-<!-- adult.train.clean.normalized = normalizar_maxmin() -->
-<!-- adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean) -->
-<!-- ``` -->
+adult.train.clean.normalized = normalizar_maxmin()
+adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean)
+```
 
-<!-- # Normalización de las variables -->
+# Normalización de las variables
 
-<!-- # Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas -->
+# Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas
 
-<!-- # Aplicación de la técnica -->
+# Aplicación de la técnica
 
-<!-- ## Estimación de los parámetros -->
+## Estimación de los parámetros
 
-<!-- ## Estimación de los hiperparámetros -->
+## Estimación de los hiperparámetros
 
-<!-- ## Error de generalización -->
+## Error de generalización
 
-<!-- # Idoneidad de la función de regularización usada -->
+# Idoneidad de la función de regularización usada
 
-<!-- # Valoración de resultados -->
+# Valoración de resultados
 
-<!-- # Justificación de la solución obtenida en base a la ténica usada y los datos. -->
+# Justificación de la solución obtenida en base a la ténica usada y los datos.
 
-<!-- ## Dimensión VC del modelo -->
+## Dimensión VC del modelo
 
-<!-- ## Error de generalización del modelo -->
+## Error de generalización del modelo
 
-<!-- ## Curva de aprendizaje del modelo -->
+## Curva de aprendizaje del modelo
 
 # Referencias
