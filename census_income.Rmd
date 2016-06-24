@@ -360,7 +360,7 @@ svmModel = svm(income ~ ., data = adult.train.clean, kernel = "radial")
 outOfSampleError(svmModel)
 ```
 
-<<<<<<< HEAD
+
 Como vemos, el error fuera de la muestra supone un 15\% de $E_{out}$ aproximadamente con un kernel de base radial, un valor de $\gamma = \frac{1}{14}$, $\epsilon = 0.1$, con el mismo peso para las dos clases, y con el valor *cost = 1*. En la matriz de confusión, vemos como este modelo se comporta mejor que otros modelos frente a la clase minoritaria, reduciendo mucho la tasa de error en esta.
 
 ### Optimizando el modelo SVM 
@@ -376,7 +376,6 @@ Para intentar mejorar el modelo, haremos una versión del modelo $SVM$ que utili
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 
 ## Vecino más cercano con base radial
->>>>>>> 4e4c9d61e5c212b962cb49d1f1074e0f43677f76
 
 ### Idoneidad del modelo de _Vecino más cercano_ para los datos del problema
 
@@ -459,7 +458,6 @@ Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades 
 ### Normalización de los datos
 
 Para normalizar los datos, vamos a usar el mismo resultado usado en el modelo del _Vecino más cercano_. 
->>>>>>> 4e4c9d61e5c212b962cb49d1f1074e0f43677f76
 
 ## Parámetros e Hiperparámetros del modelo
 
