@@ -172,13 +172,13 @@ Sólo tienen valores perdidos los atributos _workclass_, _occupation_ y _country
 También, vamos a comprobar el número de instancias que contienen algún dato perdido. Como ya hemos visto que los datos perdidos sólo se encuentran en las columnas *workclass*, *occupation* y *country*, nos fijaremos sólo en esas. Para ello, vamos a realizar lo siguiente:
 
 ```{r}
-get_rows_na <- function(datos = adult.train) {
+getRowsNA <- function(datos = adult.train) {
     aux = is.na(datos)*1
     rowsMissingValues = apply(X=aux, MARGIN=1,
              FUN = function(fila) sum(fila))
 }
 
-rowsMissingValues.train = get_rows_na()
+rowsMissingValues.train = getRowsNA()
 length(rowsMissingValues.train[rowsMissingValues.train > 0])
 ```
 
@@ -186,7 +186,8 @@ En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 dat
 
 ```{r}
 adult.train.clean = adult.train[rowsMissingValues.train == 0,]
-adult.test.clean = adult.test[get_rows_na(datos = adult.test) == 0,]
+adult.test.clean = adult.test[getRowsNA(datos = adult.test) == 0,]
+fullSet.clean = data.frame(fullSet[getRowsNA(datos = fullSet) == 0,])
 ```
 
 ## Asignación de valores numéricos a los valores categóricos
@@ -240,8 +241,8 @@ predictorGLM <- function(model, pintar = T){
     print(table(predict=ypred, truth=(adult.test.clean$income)))
   cat("Eout = ",mean((ypred != adult.test.clean$income)*1))
 }
-
-glmModel = glm(income ~ ., data = adult.train.clean, family = binomial)
+trainingIndex=which(fullSet.clean$trainTest==0)
+glmModel = glm(income ~ names(adult.train.clean), data = subset(fullSet.clean,-trainTest), subset = trainingIndex, family = binomial)
 predictorGLM(glmModel, pintar=F)
 ```
 
