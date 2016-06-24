@@ -241,17 +241,16 @@ predictorGLM <- function(model, pintar = T){
   cat("Eout = ",mean((ypred != adult.test.clean$income)*1))
 }
 
-glmModel = glm(income ~ ., data = adult.train.clean, family = "binomial")
+glmModel = glm(income ~ ., data = adult.train.clean, family = binomial)
 predictorGLM(glmModel, pintar=F)
 ```
 
 Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a tratar de mejorar el modelo, haciendo uso de la validación cruzada.
 
-```{r}
-library(boot)
-
-cvGlmModel = cv.glm(data = adult.train.clean,  glmfit = glmModel, K = 5)
-```
+<!-- ```{r} -->
+<!-- # library(boot) -->
+<!-- # cvGlmModel = cv.glm(data = adult.train.clean, glmfit = glmModel, K = 5) -->
+<!-- ``` -->
 
 
 # Ajustando un modelo _Random Forest_
@@ -312,13 +311,17 @@ length(adult.test.clean$income[adult.test.clean$income == ">50K"])
 
 Al haber esta diferencia en los datos de entrenamiento y test, los modelos obtenidos se ven muy afectados.
 
+# Ajustando un modelo de base radial
+
+Un modelo de base radial es aquel que ajusta el peso de los datos en función de la distancia a la que se encuentra un punto $v$ de $u$. Esto se conoce como el $kernel$ del modelo, donde, para los modelos de base radial, este peso se ajusta de la forma $$w(u,v)=e^{-\gamma\cdot|u-v|^2}$$
+
 # Ajustando un modelo de _Red Neuronal_
 
 ## Idoneidad del modelo de _Red Neuronal_ para los datos del problema
 
-La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es cierto que puede llegar a tener algo de sobreajuste, pero podemos usar regualización con _early stopping_ o _weight decay_ para evitar esto. 
+La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es tal la flexibilidad que ofrece el modelo, que ofrece una gran potencia para ajustar los datos y capacidad para crear un modelo muy competitivo, pero tienen un alto coste a pagar, y es que el sobreajuste a los datos está practicamente servido de entrada en el modelo. Este sobreajuste se puede aliviar algo y usar regularización con _early stopping_ o _weight decay_.
 
-El número de _unidades ocultas_ de la _Red Neuronal_ es uno de los parámetros con el que más pruebas haremos, ya que con un número grande de capas tenemos la suficiente flexibilidad como para poder capturar la función $g$ que mejor se ajusta a los datos.
+Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos.
 
 ## Aplicación del modelo de _Red Neuronal_
 
