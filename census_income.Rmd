@@ -182,7 +182,7 @@ rowsMissingValues.train = getRowsNA()
 length(rowsMissingValues.train[rowsMissingValues.train > 0])
 ```
 
-En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 datos de entrenamiento, perder 2399 no supone una gran diferencia. Por tanto, lo más sencillo es eliminar las filas que contengan algún dato perdido. Este mismo planteamiento es usado con los datos de test, donde tenemos 16282 filas en total, de las cuales 1222 presentan datos perdidos.
+En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 datos de entrenamiento, perder 2399 no supone una gran diferencia, sólo perdemos un $7,37$% de los datos. Por tanto, lo más sencillo es eliminar las filas que contengan algún dato perdido. Este mismo planteamiento es usado con los datos de test, donde tenemos 16282 filas en total, de las cuales 1222 presentan datos perdidos, un $7,505$% de los datos.
 
 ```{r}
 adult.train.clean = adult.train[rowsMissingValues.train == 0,]
@@ -342,15 +342,21 @@ library(e1071)
 svmModel = svm(income ~ ., data = adult.train.clean, kernel = "radial")
 ```
 
-# Ajustando un modelo de _Red Neuronal_
+## Vecino más cercano con base radial
 
-## Idoneidad del modelo de _Red Neuronal_ para los datos del problema
+### Idoneidad del modelo de _Vecino más cercano_ para los datos del problema
 
-La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es tal la flexibilidad que ofrece el modelo, que ofrece una gran potencia para ajustar los datos y capacidad para crear un modelo muy competitivo, pero tienen un alto coste a pagar, y es que el sobreajuste a los datos está practicamente servido de entrada en el modelo. Este sobreajuste se puede aliviar algo y usar regularización con _early stopping_ o _weight decay_.
+La razón principal para usar el vecino más cercano es que tenemos una gran cantidad de datos y además, tenemos una dimensión $d=15$. Por tanto, tenemos instancias suficientes como para que el modelo del vecino más cercano actúe de forma correcta.
 
-Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos.
+Otro punto a favor para el modelo del _Vecino más cercano_ es que funciona bien con clases desbalanceadas, tal y como se indica en [@unbalanced].
 
-## Aplicación del modelo de _Red Neuronal_
+Además, al usar una aproximación con base radial, obtenemos una clasificación mucho mejor dando a cada vecino un peso dependiende de su _distancia de Minkowski_ [@teoriakknn], que es una generalización de la _distancia Euclídea_ y la _distancia de Manhattan_:
+
+$$d(x_i,x_j) = \Bigg(\sum_{s=1}^p | x_{is} - x_{js}|^q \Bigg)^{\frac{1}{q}}$$
+
+Hay varios kernel distintos para actualizar los pesos, como por ejemplo una _gaussiana_ o la inversa de la distancia:
+
+$$Gauss\;kernel =  \frac{1}{\sqrt{2\pi}}\mathrm{exp}\bigg(-\frac{d^2}{2}\bigg) \qquad\ Inversion\;kernel =  \frac{1}{|d|}$$
 
 ### Normalización de los datos
 
@@ -363,22 +369,62 @@ $$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$
 donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`:
 
 ```{r}
-normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) {
+normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain",
+                            "capital.loss","hours.per.week"), data_test = adult.test.clean) {
     # nos quedamos sólo con las columnas numéricas
     cols_numericas = subset(data, select=numbercols)
-    # calculamos el máximo y el mínimo de cada columna
+    colstest_numericas = subset(data_test, select=numbercols)
+    # calculamos el máximo y el mínimo de cada columna de los datos de train
     maxs = apply(X=cols_numericas, MARGIN=2, FUN=max)
     mins = apply(X=cols_numericas, MARGIN=2, FUN=min)
-    # aplicamos el escalado
-    datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs))
-    for (c in numbercols)
+    # aplicamos el escalado a los datos de train
+    datos_normalizados_numericos = scale(x=cols_numericas, center=mins, scale=maxs)
+    # aplicamos los valores de normalización de train sobre los de test
+    test_normalizado = as.data.frame(scale(x = colstest_numericas, 
+                    center = attr(datos_normalizados_numericos, "scaled:center"),
+                    scale = attr(datos_normalizados_numericos, "scaled:scale")))
+    # juntamos los valores normalizados con el resto de columnas
+    datos_normalizados_numericos = as.data.frame(datos_normalizados_numericos)
+    for (c in numbercols) {
         data[c] = datos_normalizados_numericos[c]
-    data
+        data_test[c] = test_normalizado[c]
+    }
+    list(data, data_test)
 }
 
-adult.train.clean.normalized = normalizar_maxmin()
-adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean)
+norm = normalizar_maxmin()
+adult.train.clean.norm = norm[[1]]
+adult.test.clean.norm = norm[[2]]
+norm = NULL
 ```
+
+### Aplicación del modelo de _Vecino más cercano con base radial_
+
+Para elegir el $k$ a usar, vamos a entrenar el modelo con _Validación cruzada leave-one-out_. Como `kmax` vamos a poner el doble de la dimensión del dataset, para que la función tenga flexibilidad en cuanto al número de vecinos entre los que escoger.
+
+```{r}
+library(kknn)
+
+model_knn <- train.kknn(formula = income ~ ., data = adult.train.clean.norm, 
+                        kmax = 2*ncol(adult.train), kernel = c("gaussian", "inversion"))
+model_knn
+```
+
+El error obtenido con este modelo ha sido del 16%. A pesar de que este error haya sido con los datos de entrenamiento, es una buena medida debido a que ha sido calculado mediante validación cruzada _leave-one-out_ y la estimación se ha hecho en base a ese dato que se ha dejado fuera y no ha participado en el modelo. Como esto se ha repetido una vez por cada dato que tenemos, obtenemos una buena estimación del error del modelo.
+
+# Ajustando un modelo de _Red Neuronal_
+
+## Idoneidad del modelo de _Red Neuronal_ para los datos del problema
+
+La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es tal la flexibilidad que ofrece el modelo, que ofrece una gran potencia para ajustar los datos y capacidad para crear un modelo muy competitivo, pero tienen un alto coste a pagar, y es que el sobreajuste a los datos está practicamente servido de entrada en el modelo. Este sobreajuste se puede aliviar algo y usar regularización con _early stopping_ o _weight decay_.
+
+Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos.
+
+## Aplicación del modelo de _Red Neuronal_
+
+### Normalización de los datos
+
+Para normalizar los datos, vamos a usar el mismo resultado usado en el modelo del _Vecino más cercano_. 
 
 ## Parámetros e Hiperparámetros del modelo
 
