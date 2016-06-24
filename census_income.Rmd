@@ -172,13 +172,13 @@ Sólo tienen valores perdidos los atributos _workclass_, _occupation_ y _country
 También, vamos a comprobar el número de instancias que contienen algún dato perdido. Como ya hemos visto que los datos perdidos sólo se encuentran en las columnas *workclass*, *occupation* y *country*, nos fijaremos sólo en esas. Para ello, vamos a realizar lo siguiente:
 
 ```{r}
-get_rows_na <- function(datos = adult.train) {
+getRowsNA <- function(datos = adult.train) {
     aux = is.na(datos)*1
     rowsMissingValues = apply(X=aux, MARGIN=1,
              FUN = function(fila) sum(fila))
 }
 
-rowsMissingValues.train = get_rows_na()
+rowsMissingValues.train = getRowsNA()
 length(rowsMissingValues.train[rowsMissingValues.train > 0])
 ```
 
@@ -186,7 +186,8 @@ En total, sólo hay 2399 filas con valores perdidos. Al tener en total 32561 dat
 
 ```{r}
 adult.train.clean = adult.train[rowsMissingValues.train == 0,]
-adult.test.clean = adult.test[get_rows_na(datos = adult.test) == 0,]
+adult.test.clean = adult.test[getRowsNA(datos = adult.test) == 0,]
+fullSet.clean = data.frame(fullSet[getRowsNA(datos = fullSet) == 0,])
 ```
 
 ## Asignación de valores numéricos a los valores categóricos
@@ -240,17 +241,24 @@ predictorGLM <- function(model, pintar = T){
     print(table(predict=ypred, truth=(adult.test.clean$income)))
   cat("Eout = ",mean((ypred != adult.test.clean$income)*1))
 }
-
-glmModel = glm(income ~ ., data = adult.train.clean, family = binomial)
+trainingIndex=which(fullSet.clean$trainTest==0)
+fullSet.clean$trainTest = NULL
+fullSet.clean$education.num = NULL
+glmModel = glm(income ~ ., data = fullSet.clean, 
+    subset = trainingIndex, family = binomial)
 predictorGLM(glmModel, pintar=F)
 ```
 
+<<<<<<< HEAD
 Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a tratar de mejorar el modelo, haciendo uso de la validación cruzada.
 
 ```{r}
 library(boot)
 cvGlmModel = cv.glm(data = adult.train.clean, glmfit = glmModel, K = 5)
 ```
+=======
+Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a comprobar otros modelos.
+>>>>>>> 102b0deba149382ce44e01569b550505092537db
 
 
 # Ajustando un modelo _Random Forest_
@@ -310,31 +318,54 @@ length(adult.test.clean$income[adult.test.clean$income == ">50K"])
 ```
 
 Al haber esta diferencia en los datos de entrenamiento y test, los modelos obtenidos se ven muy afectados.
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<!-- ----------------------------------------- MODELOS DE BASE RADIAL ----------------------------------------- -->
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<!-- ---------------------------------------------------------------------------------------------------------- -->
 
 # Ajustando un modelo de base radial
 
-Un modelo de base radial es aquel que ajusta el peso de los datos en función de la distancia a la que se encuentra un punto $v$ de $u$. Esto se conoce como el $kernel$ del modelo, donde, para los modelos de base radial, este peso se ajusta de la forma $$w(u,v)=e^{-\gamma\cdot|u-v|^2}$$
+## Support Vector Machine
 
-# Ajustando un modelo de _Red Neuronal_
+El uso de los modelos de \textit{Support Vector Machine} es muy apropiado para el problema, ya que funciona bastante bien con los problemas de clasificación binaria, como es el caso, ya que ofrece una aproximación muy natural al problema, y ofrece un buen comportamiento en problemas con grandes dimensiones, gracias al uso del *Kernel*.
 
-## Idoneidad del modelo de _Red Neuronal_ para los datos del problema
+### Parámetros del problema
 
-La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es tal la flexibilidad que ofrece el modelo, que ofrece una gran potencia para ajustar los datos y capacidad para crear un modelo muy competitivo, pero tienen un alto coste a pagar, y es que el sobreajuste a los datos está practicamente servido de entrada en el modelo. Este sobreajuste se puede aliviar algo y usar regularización con _early stopping_ o _weight decay_.
+Los parámetros a ajustar del problema son:
 
-Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos.
+* *Kernel del SVM*: será el kernel que vamos a usar, es decir, cómo de importantes serán el resto de instancias de los datos para ajustar un dato, en función de la distancia entre los datos. En este caso, se usará un modelo de con un kernel de base radial, que tiene como base la siguiente función: $$w(u,v)=e^{-\gamma\cdot|u-v|^2}$$
 
-## Aplicación del modelo de _Red Neuronal_
+* *$\gamma$*: valor que tomará $\gamma$ para la función de base radial. Normalmente, se suele hacer que $\gamma = \frac{1}{d}$, donde $d$ es la dimensión del problema.
 
+* *$\epsilon$*: valor de $\epsilon$ para la función de pérdida de SVM. En este caso valdrá 0.1.
+
+### Ajuste del SVM al problema
+
+<<<<<<< HEAD
 ### Normalización de los datos
+=======
+Para ver como se comporta *Support Vector Machine* al problema, vamos 
 
-En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`. 
+```{r}
+library(e1071)
+>>>>>>> 102b0deba149382ce44e01569b550505092537db
 
-Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos:
+svmModel = svm(income ~ ., data = adult.train.clean, kernel = "radial")
+```
 
-$$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$
 
-donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`:
+<!-- * *Costes*: coste de la violación  -->
 
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+<!-- ---------------------------------------------------------------------------------------------------------- -->
+
+<<<<<<< HEAD
 ```{r}
 normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) {
     # nos quedamos sólo con las columnas numéricas
@@ -350,10 +381,47 @@ normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlw
         data[c] = datos_normalizados_numericos[c]
     data # devolvemos el dataset con las columnas numéricas normalizadas.
 }
+=======
+<!-- # Ajustando un modelo de _Red Neuronal_ -->
+>>>>>>> 102b0deba149382ce44e01569b550505092537db
 
-adult.train.clean.normalized = normalizar_maxmin()
-adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean)
-```
+<!-- ## Idoneidad del modelo de _Red Neuronal_ para los datos del problema -->
+
+<!-- La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es tal la flexibilidad que ofrece el modelo, que ofrece una gran potencia para ajustar los datos y capacidad para crear un modelo muy competitivo, pero tienen un alto coste a pagar, y es que el sobreajuste a los datos está practicamente servido de entrada en el modelo. Este sobreajuste se puede aliviar algo y usar regularización con _early stopping_ o _weight decay_. -->
+
+<!-- Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos. -->
+
+<!-- ## Aplicación del modelo de _Red Neuronal_ -->
+
+<!-- Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr] para complementar la teoría aprendida en la asignatura. -->
+
+<!-- ### Normalización de los datos -->
+
+<!-- En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`.  -->
+
+<!-- Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos: -->
+
+<!-- $$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$ -->
+
+<!-- donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`: -->
+
+<!-- ```{r} -->
+<!-- normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) { -->
+<!--     # nos quedamos sólo con las columnas numéricas -->
+<!--     cols_numericas = subset(data, select=numbercols) -->
+<!--     # calculamos el máximo y el mínimo de cada columna -->
+<!--     maxs = apply(X=cols_numericas, MARGIN=2, FUN=max) -->
+<!--     mins = apply(X=cols_numericas, MARGIN=2, FUN=min) -->
+<!--     # aplicamos el escalado -->
+<!--     datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs)) -->
+<!--     for (c in numbercols) -->
+<!--         data[c] = datos_normalizados_numericos[c] -->
+<!--     data -->
+<!-- } -->
+
+<!-- adult.train.clean.normalized = normalizar_maxmin() -->
+<!-- adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean) -->
+<!-- ``` -->
 
 ## Parámetros e Hiperparámetros del modelo
 
