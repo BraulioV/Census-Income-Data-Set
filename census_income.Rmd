@@ -19,8 +19,8 @@ csl: ieee-with-url.csl
 knitr::opts_chunk$set(
 	echo = TRUE,
 	message = FALSE,
-	warning = FALSE
-	
+	warning = FALSE,
+	cache = TRUE
 )
 ```
 
@@ -146,6 +146,8 @@ fullSet$marital.status = as.factor(fullSet$marital.status)
 fullSet$sex = as.factor(fullSet$sex)
 fullSet$relationship = as.factor(fullSet$relationship)
 fullSet$occupation = as.factor(fullSet$occupation)
+fullSet$income = as.factor(fullSet$income)
+fullSet$race = as.factor(fullSet$race)
 
 # Reconstruimos los datos de train y test originales
 
@@ -215,6 +217,43 @@ adult.train.clean[,"education.num"] = NULL
 adult.test.clean[,"education.num"] = NULL
 ```
 
+# Ajustando un modelo lineal
+
+Antes de pasar a modelos más complejos, vamos a comprobar cómo se comporta un modelo lineal. Esto es así, ya que la complejidad de un modelo lineal es bastante menor que a la de los otros modelos que se usarán a continuación, y si es capaz de ajustar bastante mejor los datos que el resto de modelos, se escogería este.
+
+Para ello, nos vamos a basar en un modelo que utiliza la regresión logística para este problema. Este modelo, nos devuelve la probabilidad de pertenecer a una clase u otra. Usando el concepto de \textit{maximum likelihood} o máxima probabilidad, asigna a los datos la clase a la que es más probable que pertenezca, de acuerdo a la probabilidad que calcula el modelo. 
+
+Estas probabilidades se obtienen a partir de la siguiente expresión:
+$$ P(y|x) = \theta(yw^Tx)$$
+donde $\theta$ es la función logística, $y$ es la etiqueta del modelo, $w$ es nuestro vector de pesos asociado, y $x$ los datos predictores. Esta función es la que usaremos para crear un modelo de estimación del error, y trataremos de minimizar ese error, que lo calcularemos de la siguiente forma [@lfd]:
+$$E_{in} = \frac{1}{N}\sum_{n=1}^N\ln\left(\frac{1}{\theta(y_nw^Tx_n)} \right) = \frac{1}{N}\sum_{n=1}^N\ln\left(1 + e^{-y_nw^Tx_n}\right)$$
+
+```{r}
+library(glmnet)
+
+predictorGLM <- function(model, pintar = T){
+  ypred = predict(model, adult.test.clean, type="response")
+  ypred[ypred <= 0.5] = ">50K"
+  ypred[ypred > 0.5] = "<=50K"
+
+  if(pintar)
+    print(table(predict=ypred, truth=(adult.test.clean$income)))
+  cat("Eout = ",mean((ypred != adult.test.clean$income)*1))
+}
+
+glmModel = glm(income ~ ., data = adult.train.clean, family = "binomial")
+predictorGLM(glmModel, pintar=F)
+```
+
+Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a tratar de mejorar el modelo, haciendo uso de la validación cruzada.
+
+```{r}
+library(boot)
+
+cvGlmModel = cv.glm(data = adult.train.clean,  glmfit = glmModel, K = 5)
+```
+
+
 # Ajustando un modelo _Random Forest_
 
 ## Idoneidad del modelo *Random Forest* para los datos del problema
@@ -227,23 +266,91 @@ Respecto a los datos que tenemos (30162 datos de entrenamiento y 15060 datos de 
 
 ## Aplicación del modelo *Random Forest*
 
-Para ajustar un modelo *Random Forest*, haremos uso del paquete *randomForest* de *R*.
+Para ajustar un modelo *Random Forest*, haremos uso del paquete *randomForest* de *R*. 
+
+En primer lugar, vamos a ajustar un modelo _Random Forest_ con el número de predictores por defecto de `R`: $m = \sqrt{p}$. Siendo $p$ el número de variables predictoras totales. Este número por defecto es el recomendado para problemas de clasificación como éste. En este caso, al tener $p = 13$, el número de predictores a usar será $m = 3$.
 
 ```{r}
 library(randomForest)
 
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
 print(rf.clean)
+```
 
+Con $m = 3$ obtenemos un modelo con un $18,18$% de error _Out-Of-Bag_. Al ajustar el modelo de Random Forest, cada uno de los árboles usa un subconjunto de los datos, y los no usados para calcular dicho árbol se quedan como _out of bag_. Una vez generados los árboles, se predice el valor de cada dato usando los árboles en los que dicho dato ha sido _out of bag_. En el caso de clasificación se hace mediante voto mayoritario. El error de clasificación obtenido para cada dato es válido, porque para predecir el dato se han usado árboles en los que el dato en cuestión no "ha participado" [@islroob].
+
+Respecto a la matriz de confusión generada, vemos que hay muchos más aciertos para la clase `<=50K` que para la clase `>50K`. Esto puede deberse a que el número de instancias para el la clase `<=50K` sea mucho mayor y, por tanto, el modelo tienda a clasificar los datos como `<=50K`:
+
+```{r}
+length(adult.train.clean$income[adult.train.clean$income == "<=50K"])
+length(adult.train.clean$income[adult.train.clean$income == ">50K"])
+```
+
+Como hemos dicho antes, hay una gran diferencia entre la proporción de datos para un clase y otra, esto hace que el modelo tienda a clasificar los datos como `<=50K`. De hecho, si nos fijamos en la matriz de confusión, los fallos de clasificación con `<=50K` son mucho mayores a los de `>50K`: 5442 frente a 51.
+
+Ahora bien, ¿podemos llegar a obtener un error más bajo cambiando éste parámetro? Para ello, usamos la función `tuneRF`, que empieza en el valor por defecto de `R` y, a partir de éste, prueba con otros valores hasta encontrar el óptimo. En cada iteración, incrementa o decrementa el valor de $m$ según un parámetro `stepFactor` y además, si la mejora de error obtenida no es mayor a lo indicado por el parámetro `improve`, se para la búsqueda.
+
+```{r}
 rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), y=adult.train.clean$income, doBest=T)
+```
 
-print(levels(adult.test.clean$income))
-print(levels(adult.train.clean$income))
+Como vemos en la gráfica, con $m=3$ obtenemos el modelo óptimo. Por tanto, nos quedamos con el modelo generado anteriormente.
 
+Lo último que podemos preguntarnos es, ¿cómo se comporta el modelo con los datos de test? Para saberlo, generamos la tabla de confusión:
+
+```{r}
 ypred = predict(rf.clean, adult.test.clean)
 print(table(predict=ypred, truth=(adult.test.clean$income)))
 ```
 
+De los 15060 datos de test que teníamos en total, el modelo ha acertado 123313 y ha fallado 2747. Al igual que en los datos de entrenamiento, se ve una mayoría de datos con clase `<=50K`. Aunque a la hora de los errores, ha habido más errores clasificando instancias `<=50K`: 34 frente a 2713.
+
+```{r}
+length(adult.test.clean$income[adult.test.clean$income == "<=50K"])
+length(adult.test.clean$income[adult.test.clean$income == ">50K"])
+```
+
+Al haber esta diferencia en los datos de entrenamiento y test, los modelos obtenidos se ven muy afectados.
+
+# Ajustando un modelo de _Red Neuronal_
+
+## Idoneidad del modelo de _Red Neuronal_ para los datos del problema
+
+La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es cierto que puede llegar a tener algo de sobreajuste, pero podemos usar regualización con _early stopping_ o _weight decay_ para evitar esto. 
+
+El número de _unidades ocultas_ de la _Red Neuronal_ es uno de los parámetros con el que más pruebas haremos, ya que con un número grande de capas tenemos la suficiente flexibilidad como para poder capturar la función $g$ que mejor se ajusta a los datos.
+
+## Aplicación del modelo de _Red Neuronal_
+
+Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr] para complementar la teoría aprendida en la asignatura.
+
+### Normalización de los datos
+
+En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`. 
+
+Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos:
+
+$$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$
+
+donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`:
+
+```{r}
+normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) {
+    # nos quedamos sólo con las columnas numéricas
+    cols_numericas = subset(data, select=numbercols)
+    # calculamos el máximo y el mínimo de cada columna
+    maxs = apply(X=cols_numericas, MARGIN=2, FUN=max)
+    mins = apply(X=cols_numericas, MARGIN=2, FUN=min)
+    # aplicamos el escalado
+    datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs))
+    for (c in numbercols)
+        data[c] = datos_normalizados_numericos[c]
+    data
+}
+
+adult.train.clean.normalized = normalizar_maxmin()
+adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean)
+```
 
 <!-- # Normalización de las variables -->
 
