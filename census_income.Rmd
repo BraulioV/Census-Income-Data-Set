@@ -230,8 +230,6 @@ donde $\theta$ es la función logística, $y$ es la etiqueta del modelo, $w$ es 
 $$E_{in} = \frac{1}{N}\sum_{n=1}^N\ln\left(\frac{1}{\theta(y_nw^Tx_n)} \right) = \frac{1}{N}\sum_{n=1}^N\ln\left(1 + e^{-y_nw^Tx_n}\right)$$
 
 ```{r}
-library(glmnet)
-
 predictorGLM <- function(model, pintar = T){
   ypred = predict(model, adult.test.clean, type="response")
   ypred[ypred <= 0.5] = ">50K"
@@ -271,6 +269,13 @@ En primer lugar, vamos a ajustar un modelo _Random Forest_ con el número de pre
 ```{r}
 library(randomForest)
 
+outOfSampleError <- function(model, printTable = T){
+  ypred = predict(model, adult.test.clean)
+  if(printTable)
+    print(table(predict=ypred, truth=(adult.test.clean$income)))
+  cat("Eout = ",mean((ypred != adult.test.clean$income)*1))
+}
+
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
 print(rf.clean)
 ```
@@ -297,8 +302,7 @@ Como vemos en la gráfica, con $m=3$ obtenemos el modelo óptimo. Por tanto, nos
 Lo último que podemos preguntarnos es, ¿cómo se comporta el modelo con los datos de test? Para saberlo, generamos la tabla de confusión:
 
 ```{r}
-ypred = predict(rf.clean, adult.test.clean)
-print(table(predict=ypred, truth=(adult.test.clean$income)))
+outOfSampleError(rf.tuned)
 ```
 
 De los 15060 datos de test que teníamos en total, el modelo ha acertado 123313 y ha fallado 2747. Al igual que en los datos de entrenamiento, se ve una mayoría de datos con clase `<=50K`. Aunque a la hora de los errores, ha habido más errores clasificando instancias `<=50K`: 34 frente a 2713.
@@ -319,7 +323,11 @@ Al haber esta diferencia en los datos de entrenamiento y test, los modelos obten
 
 ## Support Vector Machine
 
-El uso de los modelos de \textit{Support Vector Machine} es muy apropiado para el problema, ya que funciona bastante bien con los problemas de clasificación binaria, como es el caso, ya que ofrece una aproximación muy natural al problema, y ofrece un buen comportamiento en problemas con grandes dimensiones, gracias al uso del *Kernel*.
+### Idoneidad del modelo *Support Vector Machine* para los datos del problema
+
+El uso de los modelos de \textit{Support Vector Machine} o $SVM$ es muy apropiado para el problema, ya que funciona bastante bien con los problemas de clasificación binaria, como es el caso, ya que ofrece una aproximación muy natural al problema, y ofrece un buen comportamiento en problemas con grandes dimensiones, gracias al uso del *Kernel*.
+
+Además, los modelos $SVM$, tienen un comportamiento muy bueno frente a conjuntos de datos con clases desbalanceadas, como es nuestro caso, donde la clase con un valor de $income = ``<=50K''$ representa un subconjunto mucho mayor que la clase con $income = ``>50K''$, como podemos ver en [@unbalanced].
 
 ### Parámetros del problema
 
@@ -339,7 +347,10 @@ Para ver como se comporta *Support Vector Machine* al problema, vamos
 library(e1071)
 
 svmModel = svm(income ~ ., data = adult.train.clean, kernel = "radial")
+outOfSampleError(svmModel)
 ```
+
+Como vemos, el error fuera de la muestra supone un 14\% de $E_{out}$
 
 
 <!-- * *Costes*: coste de la violación  -->
@@ -360,60 +371,60 @@ La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto 
 
 Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos.
 
-## Aplicación del modelo de _Red Neuronal_
+<!-- ## Aplicación del modelo de _Red Neuronal_ -->
 
-Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr] para complementar la teoría aprendida en la asignatura.
+<!-- Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr] para complementar la teoría aprendida en la asignatura. -->
 
-### Normalización de los datos
+<!-- ### Normalización de los datos -->
 
-En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`.
+<!-- En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`. -->
 
-Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos:
+<!-- Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos: -->
 
-$$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$
+<!-- $$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$ -->
 
-donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`:
+<!-- donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`: -->
 
-```{r}
-normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) {
-    # nos quedamos sólo con las columnas numéricas
-    cols_numericas = subset(data, select=numbercols)
-    # calculamos el máximo y el mínimo de cada columna
-    maxs = apply(X=cols_numericas, MARGIN=2, FUN=max)
-    mins = apply(X=cols_numericas, MARGIN=2, FUN=min)
-    # aplicamos el escalado
-    datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs))
-    for (c in numbercols)
-        data[c] = datos_normalizados_numericos[c]
-    data
-}
+<!-- ```{r} -->
+<!-- normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) { -->
+<!--     # nos quedamos sólo con las columnas numéricas -->
+<!--     cols_numericas = subset(data, select=numbercols) -->
+<!--     # calculamos el máximo y el mínimo de cada columna -->
+<!--     maxs = apply(X=cols_numericas, MARGIN=2, FUN=max) -->
+<!--     mins = apply(X=cols_numericas, MARGIN=2, FUN=min) -->
+<!--     # aplicamos el escalado -->
+<!--     datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs)) -->
+<!--     for (c in numbercols) -->
+<!--         data[c] = datos_normalizados_numericos[c] -->
+<!--     data -->
+<!-- } -->
 
-adult.train.clean.normalized = normalizar_maxmin()
-adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean)
-```
+<!-- adult.train.clean.normalized = normalizar_maxmin() -->
+<!-- adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean) -->
+<!-- ``` -->
 
-# Normalización de las variables
+<!-- # Normalización de las variables -->
 
-# Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas
+<!-- # Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas -->
 
-# Aplicación de la técnica
+<!-- # Aplicación de la técnica -->
 
-## Estimación de los parámetros
+<!-- ## Estimación de los parámetros -->
 
-## Estimación de los hiperparámetros
+<!-- ## Estimación de los hiperparámetros -->
 
-## Error de generalización
+<!-- ## Error de generalización -->
 
-# Idoneidad de la función de regularización usada
+<!-- # Idoneidad de la función de regularización usada -->
 
-# Valoración de resultados
+<!-- # Valoración de resultados -->
 
-# Justificación de la solución obtenida en base a la ténica usada y los datos.
+<!-- # Justificación de la solución obtenida en base a la ténica usada y los datos. -->
 
-## Dimensión VC del modelo
+<!-- ## Dimensión VC del modelo -->
 
-## Error de generalización del modelo
+<!-- ## Error de generalización del modelo -->
 
-## Curva de aprendizaje del modelo
+<!-- ## Curva de aprendizaje del modelo -->
 
 # Referencias
