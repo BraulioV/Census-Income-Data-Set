@@ -343,14 +343,26 @@ normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlw
     mins = apply(X=cols_numericas, MARGIN=2, FUN=min)
     # aplicamos el escalado
     datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs))
+    # modificamos las columnas del dataset original. Como en R los parámetros se 
+    # pasan por copia esto no afecta a los datos originales.
     for (c in numbercols)
         data[c] = datos_normalizados_numericos[c]
-    data
+    data # devolvemos el dataset con las columnas numéricas normalizadas.
 }
 
 adult.train.clean.normalized = normalizar_maxmin()
 adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean)
 ```
+
+## Parámetros del modelo
+
+Para elegir los parámetros, vamos a seguir los consejos dados en [@estadisticosinr]:
+
+* ___Pesos iniciales___: los pesos iniciales serán números aleatorios cercanos a cero. Así, el modelo empezará de forma lineal pero se transformará en uno no lineal conforme los pesos aumenten. Si se empezase con pesos exactamente cero, el algoritmo no sería capaz de moverse, ya que estaríamos haciendo derivadas por cero. Empezar con pesos muy grandes suele llevar a soluciones malas.
+
+* ___Regularización___: al tener tantos pesos, las redes neuronales pueden sobreajustar los datos en un mínimo local. Para evitar esto, como hemos dicho antes, podemos usar _early stopping_ o _weight decay_.
+
+* ___Número de capas ocultas___: 
 
 <!-- # Normalización de las variables -->
 
