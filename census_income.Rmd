@@ -242,13 +242,13 @@ predictorGLM <- function(model, pintar = T){
 trainingIndex=which(fullSet.clean$trainTest==0)
 fullSet.clean$trainTest = NULL
 fullSet.clean$education.num = NULL
+set.seed(1)
 glmModel = glm(income ~ ., data = fullSet.clean, 
     subset = trainingIndex, family = binomial)
 predictorGLM(glmModel, pintar=F)
 ```
 
 Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a comprobar otros modelos.
-
 
 # Ajustando un modelo _Random Forest_
 
@@ -275,7 +275,7 @@ outOfSampleError <- function(model, printTable = T){
     print(table(predict=ypred, truth=(adult.test.clean$income)))
   cat("Eout = ",mean((ypred != adult.test.clean$income)*1))
 }
-
+set.seed(1)
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
 print(rf.clean)
 ```
@@ -294,7 +294,9 @@ Como hemos dicho antes, hay una gran diferencia entre la proporción de datos pa
 Ahora bien, ¿podemos llegar a obtener un error más bajo cambiando éste parámetro? Para ello, usamos la función `tuneRF`, que empieza en el valor por defecto de `R` y, a partir de éste, prueba con otros valores hasta encontrar el óptimo. En cada iteración, incrementa o decrementa el valor de $m$ según un parámetro `stepFactor` y además, si la mejora de error obtenida no es mayor a lo indicado por el parámetro `improve`, se para la búsqueda.
 
 ```{r}
-rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), y=adult.train.clean$income, doBest=T)
+set.seed(1)
+rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), 
+      y=adult.train.clean$income, doBest=T)
 ```
 
 Como vemos en la gráfica, con $m=3$ obtenemos el modelo óptimo. Por tanto, nos quedamos con el modelo generado anteriormente.
@@ -325,13 +327,13 @@ Al haber esta diferencia en los datos de entrenamiento y test, los modelos obten
 
 ### Idoneidad del modelo *Support Vector Machine* para los datos del problema
 
-El uso de los modelos de \textit{Support Vector Machine} o $SVM$ es muy apropiado para el problema, ya que funciona bastante bien con los problemas de clasificación binaria, como es el caso, ya que ofrece una aproximación muy natural al problema, y ofrece un buen comportamiento en problemas con grandes dimensiones, gracias al uso del *Kernel*.
+El uso de los modelos de \textit{Support Vector Machine} o $SVM$ es muy apropiado para el problema, ya que funciona bastante bien con los problemas de clasificación binaria, como es el caso, ya que ofrece una aproximación muy natural al problema, y un buen comportamiento en problemas con grandes dimensiones, gracias al uso del *Kernel*.
 
-Además, los modelos $SVM$, tienen un comportamiento muy bueno frente a conjuntos de datos con clases desbalanceadas, como es nuestro caso, donde la clase con un valor de $income = ``<=50K''$ representa un subconjunto mucho mayor que la clase con $income = ``>50K''$, como podemos ver en [@unbalanced].
+Además, los modelos $SVM$, tienen un rendimiento muy bueno frente a conjuntos de datos con clases desbalanceadas, como es nuestro caso, donde la clase con un valor de $income =$ "$<=50K$" representa un subconjunto mucho mayor que la clase con $income =$ "$>50K$"", como podemos ver en [@unbalanced].
 
-### Parámetros del problema
+### Parámetros del modelo
 
-Los parámetros a ajustar del problema son:
+Los parámetros a ajustar del modelo son:
 
 * *Kernel del SVM*: será el kernel que vamos a usar, es decir, cómo de importantes serán el resto de instancias de los datos para ajustar un dato, en función de la distancia entre los datos. En este caso, se usará un modelo de con un kernel de base radial, que tiene como base la siguiente función: $$w(u,v)=e^{-\gamma\cdot|u-v|^2}$$
 
@@ -339,21 +341,30 @@ Los parámetros a ajustar del problema son:
 
 * *$\epsilon$*: valor de $\epsilon$ para la función de pérdida de SVM. En este caso valdrá 0.1.
 
+* *Ponderización de la clase*: en caso de que sea necesario, podemos ponderar las clases si queremos para balancear el conjunto de datos, dando más peso a la clase minoritaria que a la mayoritaria. En un principio, las clases tendrán el mismo peso, es decir 1.
+
+### Hiperparámetros del modelo
+
+En este caso, como hiperparámetro del modelo tenemos el parámetro *cost*, que controla la regularización del problema. Esta regularización de los datos, se realiza haciendo uso de la formulación de Lagrange.
+
 ### Ajuste del SVM al problema
+
+### Normalización de los datos
 
 Para ver como se comporta *Support Vector Machine* al problema, vamos 
 
 ```{r}
 library(e1071)
-
+set.seed(1)
 svmModel = svm(income ~ ., data = adult.train.clean, kernel = "radial")
 outOfSampleError(svmModel)
 ```
 
-Como vemos, el error fuera de la muestra supone un 14\% de $E_{out}$
+Como vemos, el error fuera de la muestra supone un 15\% de $E_{out}$ aproximadamente con un kernel de base radial, un valor de $\gamma = \frac{1}{14}$, $\epsilon = 0.1$, con el mismo peso para las dos clases, y con el valor *cost = 1*. En la matriz de confusión, vemos como este modelo se comporta mejor que otros modelos frente a la clase minoritaria, reduciendo mucho la tasa de error en esta.
 
+### Optimizando el modelo SVM 
 
-<!-- * *Costes*: coste de la violación  -->
+Para intentar mejorar el modelo, haremos una versión del modelo $SVM$ que utilizará la función `tune` para ir probando con distintos valores para cada uno de los parámetros, devolviéndonos el mejor modelo encontrado, junto con información del valor de los parámetros usados.
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <!-- ---------------------------------------------------------------------------------------------------------- -->
@@ -371,36 +382,66 @@ La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto 
 
 Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos.
 
-<!-- ## Aplicación del modelo de _Red Neuronal_ -->
+## Aplicación del modelo de _Red Neuronal_
 
-<!-- Para aplicar el modelo, vamos a seguir las indicaciones dadas en [@redneuronalr] para complementar la teoría aprendida en la asignatura. -->
+### Normalización de los datos
 
-<!-- ### Normalización de los datos -->
+En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`.
 
-<!-- En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`. -->
+Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos:
 
-<!-- Para ello, he desarrollado una función que normaliza los datos en el intervalo $[0,1]$ aplicando la siguiente fórmula a cada uno de los datos: -->
+$$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$
 
-<!-- $$z_i = \frac{x_i - min(x)}{max(x) - min(x)}$$ -->
+donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`:
 
-<!-- donde $x$ representa el vector de datos originales y $z$ el vector de datos normalizados. Este método busca normalizar en base al mínimo (que representaría el 0) y el máximo (que representaría el 1) todos los datos. En `R`, la forma de implementar este método es mediante la función `scale`: -->
+```{r}
+normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) {
+    # nos quedamos sólo con las columnas numéricas
+    cols_numericas = subset(data, select=numbercols)
+    # calculamos el máximo y el mínimo de cada columna
+    maxs = apply(X=cols_numericas, MARGIN=2, FUN=max)
+    mins = apply(X=cols_numericas, MARGIN=2, FUN=min)
+    # aplicamos el escalado
+    datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs))
+    for (c in numbercols)
+        data[c] = datos_normalizados_numericos[c]
+    data
+}
+
+adult.train.clean.normalized = normalizar_maxmin()
+adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean)
+```
+
+
+## Parámetros e Hiperparámetros del modelo
+
+Para elegir los parámetros, vamos a seguir los consejos dados en [@estadisticosinr]:
+
+* ___Pesos iniciales___: los pesos iniciales serán números aleatorios cercanos a cero. Así, el modelo empezará de forma lineal pero se transformará en uno no lineal conforme los pesos aumenten. Si se empezase con pesos exactamente cero, el algoritmo no sería capaz de moverse, ya que estaríamos haciendo derivadas por cero. Empezar con pesos muy grandes suele llevar a soluciones malas.
+
+* ___Regularización___: al tener tantos pesos, las redes neuronales pueden sobreajustar los datos en un mínimo local. Para evitar esto, como hemos dicho antes, podemos usar _early stopping_ o _weight decay_.
+
+* ___Número de capas ocultas___: es recomendable tener entre 5 y 100 capas, para que el modelo pueda tener flexibilidad suficiente. La regularización se encarga de dejar a 0 aquellos pesos que lleven a sobreajusar el modelo.
 
 <!-- ```{r} -->
-<!-- normalizar_maxmin <- function(data=adult.train.clean, numbercols = c("age","fnlwgt","capital.gain","capital.loss","hours.per.week")) { -->
-<!--     # nos quedamos sólo con las columnas numéricas -->
-<!--     cols_numericas = subset(data, select=numbercols) -->
-<!--     # calculamos el máximo y el mínimo de cada columna -->
-<!--     maxs = apply(X=cols_numericas, MARGIN=2, FUN=max) -->
-<!--     mins = apply(X=cols_numericas, MARGIN=2, FUN=min) -->
-<!--     # aplicamos el escalado -->
-<!--     datos_normalizados_numericos = as.data.frame(scale(x=cols_numericas, center=mins, scale=maxs)) -->
-<!--     for (c in numbercols) -->
-<!--         data[c] = datos_normalizados_numericos[c] -->
-<!--     data -->
-<!-- } -->
+<!-- library(RSNNS) -->
+<!-- attach(adult.train.clean.normalized) -->
 
-<!-- adult.train.clean.normalized = normalizar_maxmin() -->
-<!-- adult.test.clean.normalized = normalizar_maxmin(data=adult.test.clean) -->
+<!-- mlp(x = subset(adult.train.clean.normalized, select = -income), y = income) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- library(neuralnet) -->
+
+<!-- m <- model.matrix(object = ~ income + age + workclass + fnlwgt + education + marital.status + occupation + relationship + race + sex + capital.gain + capital.loss + hours.per.week, data = adult.train.clean.normalized) -->
+
+<!-- n <- neuralnet(formula = income ~ (age + workclass + fnlwgt + education + marital.status + occupation + relationship + race + sex + capital.gain + capital.loss + hours.per.week), data = m, hidden = 13, stepmax = 200) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- library(nnet) -->
+
+<!-- nnet(formula = income ~ ., data = adult.train.clean, size = 5, decay=0.01) -->
 <!-- ``` -->
 
 <!-- # Normalización de las variables -->
