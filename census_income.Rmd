@@ -380,8 +380,8 @@ tune.svm(formula = income ~., data = adult.train.clean, kernel = "radial", k = 1
 
 ```{r}
 svmModelTuned = tune(method = svm, income ~., data=adult.train.clean, kernel = "radial",
-  ranges = list(cost=c(0.001,0.01,0.1,1,5,10,100,1000)),
-  costs=(-1:1), gamma = (1/14):10, epsilon=seq(0.01, 1, 0.05))
+  ranges = list(cost=c(0.001,0.01,0.1,1,5,10,100)),
+  costs=(-1:1), gamma = (1/14):5, epsilon=seq(0.01, 1, 0.15))
 
 ```
 
