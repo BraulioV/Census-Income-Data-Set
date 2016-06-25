@@ -370,12 +370,20 @@ svmModel = svm(income ~ ., data = adult.train.clean, kernel = "radial")
 outOfSampleError(svmModel)
 ```
 
-
 Como vemos, el error fuera de la muestra supone un 15\% de $E_{out}$ aproximadamente con un kernel de base radial, un valor de $\gamma = \frac{1}{14}$, $\epsilon = 0.1$, con el mismo peso para las dos clases, y con el valor *cost = 1*. En la matriz de confusión, vemos como este modelo se comporta mejor que otros modelos frente a la clase minoritaria, reduciendo mucho la tasa de error en esta.
 
 ### Optimizando el modelo SVM 
 
-Para intentar mejorar el modelo, haremos una versión del modelo $SVM$ que utilizará la función `tune` para ir probando con distintos valores para cada uno de los parámetros, devolviéndonos el mejor modelo encontrado, junto con información del valor de los parámetros usados.
+Para intentar mejorar el modelo, haremos una versión del modelo $SVM$ que utilizará la función `tune` para ir probando con distintos valores para cada uno de los parámetros, devolviéndonos el mejor modelo encontrado, junto con información del valor de los parámetros usados. Además, en esta versión incluiremos regularización, para intentar generalizar mejor y reducir el sobreajuste.
+
+tune.svm(formula = income ~., data = adult.train.clean, kernel = "radial", k = 15,)
+
+```{r}
+svmModelTuned = tune(method = svm, income ~., data=adult.train.clean, kernel = "radial",
+  ranges = list(cost=c(0.001,0.01,0.1,1,5,10,100,1000)),
+  costs=(-1:1), gamma = (1/14):10, epsilon=seq(0.01, 1, 0.05))
+
+```
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <!-- ---------------------------------------------------------------------------------------------------------- -->
