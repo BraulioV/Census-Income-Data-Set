@@ -282,14 +282,14 @@ print(rf.clean)
 
 Con $m = 3$ obtenemos un modelo con un $18,18$% de error _Out-Of-Bag_. Al ajustar el modelo de Random Forest, cada uno de los árboles usa un subconjunto de los datos, y los no usados para calcular dicho árbol se quedan como _out of bag_. Una vez generados los árboles, se predice el valor de cada dato usando los árboles en los que dicho dato ha sido _out of bag_. En el caso de clasificación se hace mediante voto mayoritario. El error de clasificación obtenido para cada dato es válido, porque para predecir el dato se han usado árboles en los que el dato en cuestión no "ha participado" [@islroob].
 
-Respecto a la matriz de confusión generada, vemos que hay muchos más aciertos para la clase `<=50K` que para la clase `>50K`. Esto puede deberse a que el número de instancias para el la clase `<=50K` sea mucho mayor y, por tanto, el modelo tienda a clasificar los datos como `<=50K`:
+Respecto a la matriz de confusión generada, vemos que hay muchos más aciertos para la clase `<=50K` que para la clase `>50K` y que la tasa de error en la primera clase es mucho menor que la de la segunda, $0,002$ frente a $0,72$. Esto puede deberse a que el número de instancias para el la clase `<=50K` sea mucho mayor y, por tanto, el modelo tienda a clasificar los datos como `<=50K`:
 
 ```{r}
 length(adult.train.clean$income[adult.train.clean$income == "<=50K"])
 length(adult.train.clean$income[adult.train.clean$income == ">50K"])
 ```
 
-Como hemos dicho antes, hay una gran diferencia entre la proporción de datos para un clase y otra, esto hace que el modelo tienda a clasificar los datos como `<=50K`. De hecho, si nos fijamos en la matriz de confusión, los fallos de clasificación con `<=50K` son mucho mayores a los de `>50K`: 5442 frente a 51.
+Como hemos dicho antes, hay una gran diferencia entre la proporción de datos para un clase y otra, esto hace que el modelo tienda a clasificar los datos como `<=50K`. De hecho, si nos fijamos en la matriz de confusión, los fallos de clasificación con `<=50K` son mucho mayores a los de `>50K`: 5446 frente a 54.
 
 Ahora bien, ¿podemos llegar a obtener un error más bajo cambiando éste parámetro? Para ello, usamos la función `tuneRF`, que empieza en el valor por defecto de `R` y, a partir de éste, prueba con otros valores hasta encontrar el óptimo. En cada iteración, incrementa o decrementa el valor de $m$ según un parámetro `stepFactor` y además, si la mejora de error obtenida no es mayor a lo indicado por el parámetro `improve`, se para la búsqueda.
 
@@ -305,16 +305,26 @@ Lo último que podemos preguntarnos es, ¿cómo se comporta el modelo con los da
 
 ```{r}
 outOfSampleError(rf.tuned)
+cat("Error obtenido en la clase <=50K: ", 
+    2700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
+cat("Error obtenido en la clase >50K: ", 
+    269900/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
 ```
 
-De los 15060 datos de test que teníamos en total, el modelo ha acertado 123313 y ha fallado 2747. Al igual que en los datos de entrenamiento, se ve una mayoría de datos con clase `<=50K`. Aunque a la hora de los errores, ha habido más errores clasificando instancias `<=50K`: 34 frente a 2713.
+El $E_{out}$ obtenido es muy parecido al _Out-Of-Bag_, ya que éste es una buen estimador del error fuera de la muestra tal y como hemos compobado.
+
+En esta matriz de confusión se aprecia lo desbalanceadas que están las clases en este problema: en la clase `<=50K` hemos obtenido un error del $0,2$%, mientras que en la clase `>50K` el error ha sido del 72%. 
+
+En los datos de test también se aprecia lo desbalanceadas que están las clases en el problema y esto influye también en los resultados obtenidos:
+
+<!-- De los 15060 datos de test que teníamos en total, el modelo ha acertado 123313 y ha fallado 2747. Al igual que en los datos de entrenamiento, se ve una mayoría de datos con clase `<=50K`. Aunque a la hora de los errores, ha habido más errores clasificando instancias `<=50K`: 34 frente a 2713. -->
 
 ```{r}
 length(adult.test.clean$income[adult.test.clean$income == "<=50K"])
 length(adult.test.clean$income[adult.test.clean$income == ">50K"])
 ```
 
-Al haber esta diferencia en los datos de entrenamiento y test, los modelos obtenidos se ven muy afectados.
+Al haber esta diferencia en los datos de entrenamiento y test, el modelo se ve muy afectado.
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <!-- ----------------------------------------- MODELOS DE BASE RADIAL ----------------------------------------- -->
@@ -433,17 +443,33 @@ norm = NULL
 
 ### Aplicación del modelo de _Vecino más cercano con base radial_
 
-Para elegir el $k$ a usar, vamos a entrenar el modelo con _Validación cruzada leave-one-out_. Como `kmax` vamos a poner el doble de la dimensión del dataset, para que la función tenga flexibilidad en cuanto al número de vecinos entre los que escoger.
+Para elegir el $k$ a usar, vamos a entrenar el modelo con _Validación cruzada leave-one-out_. Como `kmax` vamos a poner el doble de la dimensión del dataset, para que la función tenga flexibilidad en cuanto al número de vecinos entre los que escoger. Como kernel, vamos a elegir entre uno gaussiano y otro inversamente proporcional a la distancia, ya que elegir entre alguno más incrementa muchísimo el tiempo de ejecución.
 
 ```{r}
 library(kknn)
 
-model_knn <- train.kknn(formula = income ~ ., data = adult.train.clean.norm, 
+best_model_knn <- train.kknn(formula = income ~ ., data = adult.train.clean.norm, 
                         kmax = 2*ncol(adult.train), kernel = c("gaussian", "inversion"))
-model_knn
+best_model_knn
 ```
 
 El error obtenido con este modelo ha sido del 16%. A pesar de que este error haya sido con los datos de entrenamiento, es una buena medida debido a que ha sido calculado mediante validación cruzada _leave-one-out_ y la estimación se ha hecho en base a ese dato que se ha dejado fuera y no ha participado en el modelo. Como esto se ha repetido una vez por cada dato que tenemos, obtenemos una buena estimación del error del modelo.
+
+Una vez obtenidos los mejores parámetros, vamos a ajustar el modelo para obtener también un vector con predicciones y poder hacer la matriz de confusión:
+
+```{r}
+model_knn <- kknn(formula = income ~ ., train = adult.train.clean.norm, test = adult.test.clean.norm, 
+     k = best_model_knn$best.parameters$k, kernel = best_model_knn$best.parameters$kernel)
+print(table(predict = model_knn$fitted.values, truth = adult.test.clean$income))
+cat("Eout = ",mean((model_knn$fitted.values != adult.test.clean$income)*1))
+```
+
+El error de test obtenido ha sido del 16%, al igual que el error de validación cruzada. En este caso el modelo ha conseguido corregir las clases desbalanceadas que había, equilibrando el error obtenido en una y en otra:
+
+```{r}
+cat("Error obtenido en la clase <=50K: ", 94700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
+cat("Error obtenido en la clase >50K: ", 154100/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
+```
 
 # Ajustando un modelo de _Red Neuronal_
 
