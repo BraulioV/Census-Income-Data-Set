@@ -475,9 +475,13 @@ cat("Eout = ",mean((model_knn$fitted.values != adult.test.clean$income)*1))
 El error de test obtenido ha sido del 16%, al igual que el error de validación cruzada. En este caso el modelo ha conseguido corregir las clases desbalanceadas que había, equilibrando el error obtenido en una y en otra:
 
 ```{r}
-cat("Error obtenido en la clase <=50K: ", 94700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
-cat("Error obtenido en la clase >50K: ", 154100/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
+cat("Error obtenido en la clase <=50K: ", 
+    94700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
+cat("Error obtenido en la clase >50K: ", 
+    154100/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
 ```
+
+A pesar de que el error en la clase `>50K` sigue siendo bastante alto, ha disminuido bastante y el error en la clase `<=50K` ha aumentado pero aún sigue siendo bajo. El error en ambas clases se ha equilibrado un poco y por eso, hemos obtenido un mejor error en el modelo que con `RandomForest`.
 
 # Ajustando un modelo de _Red Neuronal_
 
