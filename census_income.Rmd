@@ -493,13 +493,15 @@ A pesar de que el error en la clase `>50K` sigue siendo bastante alto, ha dismin
 
 ## Idoneidad del modelo de _Red Neuronal_ para los datos del problema
 
-La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es tal la flexibilidad que ofrece el modelo, que ofrece una gran potencia para ajustar los datos y capacidad para crear un modelo muy competitivo, pero tienen un alto coste a pagar, y es que el sobreajuste a los datos está practicamente servido de entrada en el modelo. Este sobreajuste se puede aliviar algo y usar regularización con _early stopping_ o _weight decay_.
+La _Red Neuronal_ es un modelo muy extendido y con mucha flexibilidad en cuanto a la parametrización del modelo. Es tal la flexibilidad que ofrece, que tiene una gran potencia para ajustar los datos y capacidad para crear un modelo muy competitivo, pero tienen un alto coste a pagar, y es que el sobreajuste a los datos está practicamente servido de entrada. Este sobreajuste se puede mejorar usando regularización con _early stopping_ o _weight decay_.
 
-Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_. Este parámetro controla el número de capas internas de las que dispone nuestra red. El número de capas de las que dispone nuestra red, afecta mucho el comportamiento de la red, ya que, si la red dispone de una sola capa interna, se comporta exactamente como un modelo lineal, teniendo un comportamiento muy parecido al del *Perceptron*. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos.
+Uno de los parámetros que utiliza la _Red Neuronal_ es el número de _unidades ocultas_, $m$. Este parámetro controla el número de capas internas de las que dispone nuestra red. Éste parámetro afecta mucho a su comportamiento, ya que tal y como se indica en [@lfd], con éste parámetro suficientemente alto podemos asegurar $E_{in} \approx E_{out}$. A mayor número de capas, las transformaciones que existen entre capa y capa, dan potencia y flexibilidad al modelo para generar una función $g$ que ajuste a $f$, con la contrapartida de que aumentamos la posibilidad de sobreajustar los datos. Además, como también tenemos un número alto de instancias, $N$, incrementamos la posibilidad de obtener un buen rendimiento en el modelo obtenido. La mejor forma de escoger este parámetro es mediante validación cruzada.
 
-## Aplicación del modelo de _Red Neuronal_
+Al tener un problema de dimensión media/alta ($d=15$) y tantas instancias ($N = 30162$), conviene usar un modelo lo suficientemente flexible para poder obtener una buena aproximación de forma sencilla. 
 
-### Normalización de los datos
+Por último, al igual que otros modelos usados en este proyecto, las _Redes Neuronales_ son buenos modelos para clases desbalanceadas, tal y como se indica en [@unbalanced].
+
+## Normalización de los datos
 
 Para normalizar los datos, vamos a usar el mismo resultado usado en el modelo del _Vecino más cercano_. 
 
@@ -509,11 +511,15 @@ Para elegir los parámetros, vamos a seguir los consejos dados en [@estadisticos
 
 * ___Pesos iniciales___: los pesos iniciales serán números aleatorios cercanos a cero. Así, el modelo empezará de forma lineal pero se transformará en uno no lineal conforme los pesos aumenten. Si se empezase con pesos exactamente cero, el algoritmo no sería capaz de moverse, ya que estaríamos haciendo derivadas por cero. Empezar con pesos muy grandes suele llevar a soluciones malas.
 
-* ___Regularización___: al tener tantos pesos, las redes neuronales pueden sobreajustar los datos en un mínimo local. Para evitar esto, como hemos dicho antes, podemos usar _early stopping_ o _weight decay_. En este caso vamos a usar _weight decay_
+* ___Regularización___: al tener tantos pesos, las redes neuronales pueden sobreajustar los datos en un mínimo local. Para evitar esto, como hemos dicho antes, podemos usar _early stopping_ o _weight decay_. En este caso vamos a usar _weight decay_, ya que la función que vamos a utilizar, `nnet`, nos permite ajustar este hiperparámetro de forma sencilla. Debido a la gran cantidad de instancias de las que disponemos, la función `tune.nnet` necesitaba un gran tiempo de cálculo y, en vez de realizar validación cruzada, hemos usado $\lambda = 0,1$ para aplicar regularización, ya que de entre todos los parámetros que hemos probado era el que mejor resultado obtenía.
 
-* ___Número de capas ocultas___: es recomendable tener entre 5 y 100 capas, para que el modelo pueda tener flexibilidad suficiente. La regularización se encarga de dejar a 0 aquellos pesos que lleven a sobreajusar el modelo. El problema es que, debido a que el paquete sólo permite usar una única capa oculta, no vamos a poder configurar este parámetro y obtendremos unos resultados bastante malos. Hay otros paquetes que sí permiten configurar el número de capas ocultas, pero no permiten usar datos categóricos.
+* ___Número de capas ocultas___: es recomendable tener entre 5 y 100 capas, para que el modelo pueda tener flexibilidad suficiente. La regularización se encarga de dejar a 0 aquellos pesos que lleven a sobreajusar el modelo. El problema es que, debido a que el paquete sólo permite usar una única capa oculta, no vamos a poder configurar este parámetro y obtendremos unos resultados peores que si usáramos un mayor número de capas ocultas. Hay otros paquetes que sí permiten configurar el número de capas ocultas, pero no permiten usar datos categóricos.
 
-* __Número de unidades en la capa oculta__: lo que sí podemos configurar es el número de unidades en la capa oculta.
+* ___Número de unidades en la capa oculta___: lo que sí podemos configurar es el número de unidades en la capa oculta, aunque de forma limitada: si establecemos un número mayor a 15, la función devuelve un error diciendo que el modelo tiene demasiadas unidades.
+
+## Aplicación del modelo
+
+Hemos establecido a 10000 el número máximo de iteraciones, para que el algoritmo pudiese conveger antes de llegar a dicho límite. Esto no es un problema ya que estamos aplicando regularización con _weight decay_. El parámetro `trace = F` sólo sirve para que no se imprima cada paso que da el algoritmo en el PDF.
 
 ```{r}
 library(nnet)
@@ -521,6 +527,17 @@ model.nnet = nnet(formula = income ~ ., maxit=10000,
     data = adult.train.clean.norm, size = 10, decay=0.1,trace=F)
 outOfSampleError(model.nnet, adult.test.clean.norm, type="class")
 ```
+
+A pesar de disponer de una única capa oculta, el modelo ha sido capaz de obtener un resultado muy competitivo: $E_{out} = 15$%. Además, el número de fallos en cada clase está bastante equilibrado, casi tanto como en el modelo KNN con base radial:
+
+```{r}
+cat("Error obtenido en la clase <=50K: ", 
+    94700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
+cat("Error obtenido en la clase >50K: ", 
+    154100/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
+```
+
+Por tanto, la conclusión obtenida sobre éste modelo es, que a pesar de haber estado limitado por la implementación del paquete de `R`, hemos obtenido un resultado muy competitivos y de una alta calidad, tanto en cuanto a error fuera de la muestra como error en cada clase y equilibrio en clases desbalanceadas.
 
 <!-- # Normalización de las variables -->
 
