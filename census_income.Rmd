@@ -269,11 +269,11 @@ En primer lugar, vamos a ajustar un modelo _Random Forest_ con el número de pre
 ```{r}
 library(randomForest)
 
-outOfSampleError <- function(model, printTable = T){
-  ypred = predict(model, adult.test.clean)
+outOfSampleError <- function(model, newdata = adult.test.clean,  printTable = T, ...){
+  ypred = predict(object = model, newdata = newdata, ...)
   if(printTable)
-    print(table(predict=ypred, truth=(adult.test.clean$income)))
-  cat("Eout = ",mean((ypred != adult.test.clean$income)*1))
+    print(table(predict=ypred, truth=newdata$income))
+  cat("Eout = ",mean((ypred != newdata$income)*1))
 }
 set.seed(1)
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
@@ -533,9 +533,10 @@ Para elegir los parámetros, vamos a seguir los consejos dados en [@estadisticos
 ```{r}
 library(nnet)
 
-tune.nnet(income ~ ., data = adult.train.clean.norm,
-          size = 1:5, decay = c(0.01,0.1,0.5))
-# nnet(formula = income ~ ., data = adult.train.clean, size = 5, decay=0.01)
+# tune.nnet(income ~ ., data = adult.train.clean.norm,
+#           size = 1:5, decay = c(0.01,0.1,0.5))
+model.nnet <- nnet(formula = income ~ ., data = adult.train.clean.norm, size = 5, decay=0.01)
+outOfSampleError(model.nnet, adult.test.clean.norm, type="class")
 ```
 
 <!-- # Normalización de las variables -->
