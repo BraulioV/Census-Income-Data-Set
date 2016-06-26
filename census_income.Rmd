@@ -345,7 +345,7 @@ Los parámetros a ajustar del modelo son:
 
 ### Hiperparámetros del modelo
 
-En este caso, como hiperparámetro del modelo tenemos el parámetro *cost*, que controla la regularización del problema. Esta regularización de los datos, se realiza haciendo uso de la formulación de Lagrange.
+En este caso, como hiperparámetro del modelo tenemos el parámetro $\lambda$ o *cost*, que controla la regularización del problema. Esta regularización de los datos, se realiza haciendo uso de la formulación de Lagrange.
 
 ### Ajuste del SVM al problema
 
@@ -360,20 +360,26 @@ svmModel = svm(income ~ ., data = adult.train.clean, kernel = "radial")
 outOfSampleError(svmModel)
 ```
 
-Como vemos, el error fuera de la muestra supone un 15\% de $E_{out}$ aproximadamente con un kernel de base radial, un valor de $\gamma = \frac{1}{14}$, $\epsilon = 0.1$, con el mismo peso para las dos clases, y con el valor *cost = 1*. En la matriz de confusión, vemos como este modelo se comporta mejor que otros modelos frente a la clase minoritaria, reduciendo mucho la tasa de error en esta.
+Como vemos, el error fuera de la muestra supone un 15\% de $E_{out}$ aproximadamente con un kernel de base radial, un valor de $\gamma = \frac{1}{14}$, $\epsilon = 0,1$, con el mismo peso para las dos clases, y con el valor *cost = 1*. En la matriz de confusión, vemos como este modelo se comporta mejor que otros modelos frente a la clase minoritaria, reduciendo mucho la tasa de error en esta.
 
-### Optimizando el modelo SVM 
-
-Para intentar mejorar el modelo, haremos una versión del modelo $SVM$ que utilizará la función `tune` para ir probando con distintos valores para cada uno de los parámetros, devolviéndonos el mejor modelo encontrado, junto con información del valor de los parámetros usados. Además, en esta versión incluiremos regularización, para intentar generalizar mejor y reducir el sobreajuste.
-
-tune.svm(formula = income ~., data = adult.train.clean, kernel = "radial", k = 15,)
+A continuación, vamos a realizar tres nuevos modelos con $SVM$, añadiendo regularziación al modelo. Este valor de regularización tomará los valores de $\lambda = 0,001$, $\lambda = 0,01$, $\lambda = 0,1$ y $\lambda = 0,9$.
 
 ```{r}
-svmModelTuned = tune(method = svm, income ~., data=adult.train.clean, kernel = "radial",
-  ranges = list(cost=c(0.001,0.01,0.1,1,5,10,100,1000)),
-  costs=(-1:1), gamma = (1/14):10, epsilon=seq(0.01, 1, 0.05))
-
+set.seed(1)
+svmModelReg_0001 = svm(income ~ ., data = adult.train.clean, kernel = "radial", cost = 0.001)
+outOfSampleError(svmModelReg_0001)
+set.seed(1)
+svmModelReg_001 = svm(income ~ ., data = adult.train.clean, kernel = "radial", cost = 0.01)
+outOfSampleError(svmModelReg_001)
+set.seed(1)
+svmModelReg_01 = svm(income ~ ., data = adult.train.clean, kernel = "radial", cost = 0.1)
+outOfSampleError(svmModelReg_01)
+set.seed(1)
+svmModelReg_09 = svm(income ~ ., data = adult.train.clean, kernel = "radial", cost = 0.9)
+outOfSampleError(svmModelReg_09)
 ```
+
+Como podemos ver, los resultados cambian dependiendo del valor de $\lambda$ que tome el modelo. Frente al valor de $\lambda$ del primer modelo $SVM$, que era 1, el resto de modelos empeoran al cambiar el valor de la regularización, pasando de una gran deterioro del modelo en valores pequeños de $\lambda$ ($0,001$ y $0,01$) a un deterioro más pequeño con $\lambda = 0,1$. Sin embargo, con $\lambda = 0,9$ el modelo es capaz de mejorar un poco al primer modelo.
 
 <!-- ---------------------------------------------------------------------------------------------------------- -->
 <!-- ---------------------------------------------------------------------------------------------------------- -->
