@@ -532,10 +532,8 @@ Para elegir los parámetros, vamos a seguir los consejos dados en [@estadisticos
 
 ```{r}
 library(nnet)
-
-tune.nnet(income ~ ., data = adult.train.clean.norm,
-          size = 1:5, decay = c(0.01,0.1,0.5))
-# nnet(formula = income ~ ., data = adult.train.clean, size = 5, decay=0.01)
+nNetModel = nnet(formula = income ~ ., maxit=10000, 
+    data = adult.train.clean.norm, size = 10, decay=0.1)
 ```
 
 <!-- # Normalización de las variables -->
