@@ -509,9 +509,11 @@ Para elegir los parámetros, vamos a seguir los consejos dados en [@estadisticos
 
 * ___Pesos iniciales___: los pesos iniciales serán números aleatorios cercanos a cero. Así, el modelo empezará de forma lineal pero se transformará en uno no lineal conforme los pesos aumenten. Si se empezase con pesos exactamente cero, el algoritmo no sería capaz de moverse, ya que estaríamos haciendo derivadas por cero. Empezar con pesos muy grandes suele llevar a soluciones malas.
 
-* ___Regularización___: al tener tantos pesos, las redes neuronales pueden sobreajustar los datos en un mínimo local. Para evitar esto, como hemos dicho antes, podemos usar _early stopping_ o _weight decay_.
+* ___Regularización___: al tener tantos pesos, las redes neuronales pueden sobreajustar los datos en un mínimo local. Para evitar esto, como hemos dicho antes, podemos usar _early stopping_ o _weight decay_. En este caso vamos a usar _weight decay_
 
-* ___Número de capas ocultas___: es recomendable tener entre 5 y 100 capas, para que el modelo pueda tener flexibilidad suficiente. La regularización se encarga de dejar a 0 aquellos pesos que lleven a sobreajusar el modelo.
+* ___Número de capas ocultas___: es recomendable tener entre 5 y 100 capas, para que el modelo pueda tener flexibilidad suficiente. La regularización se encarga de dejar a 0 aquellos pesos que lleven a sobreajusar el modelo. El problema es que, debido a que el paquete sólo permite usar una única capa oculta, no vamos a poder configurar este parámetro y obtendremos unos resultados bastante malos. Hay otros paquetes que sí permiten configurar el número de capas ocultas, pero no permiten usar datos categóricos.
+
+* __Número de unidades en la capa oculta__: lo que sí podemos configurar es el número de unidades en la capa oculta.
 
 <!-- ```{r} -->
 <!-- library(RSNNS) -->
@@ -528,11 +530,13 @@ Para elegir los parámetros, vamos a seguir los consejos dados en [@estadisticos
 <!-- n <- neuralnet(formula = income ~ (age + workclass + fnlwgt + education + marital.status + occupation + relationship + race + sex + capital.gain + capital.loss + hours.per.week), data = m, hidden = 13, stepmax = 200) -->
 <!-- ``` -->
 
-<!-- ```{r} -->
-<!-- library(nnet) -->
+```{r}
+library(nnet)
 
-<!-- nnet(formula = income ~ ., data = adult.train.clean, size = 5, decay=0.01) -->
-<!-- ``` -->
+tune.nnet(income ~ ., data = adult.train.clean.norm,
+          size = 1:5, decay = c(0.01,0.1,0.5))
+# nnet(formula = income ~ ., data = adult.train.clean, size = 5, decay=0.01)
+```
 
 <!-- # Normalización de las variables -->
 
