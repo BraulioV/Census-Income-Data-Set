@@ -246,7 +246,7 @@ fullSet.clean$trainTest = NULL
 fullSet.clean$education.num = NULL
 set.seed(1)
 glmModel = glm(income ~ ., data = fullSet.clean, 
-    subset = trainingIndex, family = binomial)
+    subset = trainingIndex, family = binomial(logit))
 glmPred = predictorGLM(glmModel, pintar=T)
 ```
 
@@ -285,7 +285,6 @@ outOfSampleError <- function(model, newdata = adult.test.clean,  printTable = T,
   if(printTable)
     print(table(predict=ypred, truth=newdata$income))
   cat("Eout = ",mean((ypred != newdata$income)*1))
-  ypred
 }
 set.seed(1)
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
@@ -316,7 +315,7 @@ Como vemos en la gráfica, con $m=3$ obtenemos el modelo óptimo. Por tanto, nos
 Lo último que podemos preguntarnos es, ¿cómo se comporta el modelo con los datos de test? Para saberlo, generamos la tabla de confusión:
 
 ```{r}
-rfpreds = outOfSampleError(rf.tuned)
+outOfSampleError(rf.tuned)
 cat("Error obtenido en la clase <=50K: ", 
     2700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
 cat("Error obtenido en la clase >50K: ", 
@@ -393,7 +392,7 @@ svmModelReg_01 = svm(income ~ ., data = adult.train.clean, kernel = "radial", co
 outOfSampleError(svmModelReg_01)
 set.seed(1)
 svmModelReg_09 = svm(income ~ ., data = adult.train.clean, kernel = "radial", cost = 0.9)
-svmPreds = outOfSampleError(svmModelReg_09)
+outOfSampleError(svmModelReg_09)
 ```
 
 Como podemos ver, los resultados cambian dependiendo del valor de $\lambda$ que tome el modelo. Frente al valor de $\lambda$ del primer modelo $SVM$, que era 1, el resto de modelos empeoran al cambiar el valor de la regularización, pasando de una gran deterioro del modelo en valores pequeños de $\lambda$ ($0,001$ y $0,01$) a un deterioro más pequeño con $\lambda = 0,1$. Sin embargo, con $\lambda = 0,9$ el modelo es capaz de mejorar un poco al primer modelo.
@@ -526,7 +525,7 @@ library(nnet)
 set.seed(1)
 model.nnet = nnet(formula = income ~ ., maxit=10000, 
     data = adult.train.clean.norm, size = 10, decay=0.1,trace=F)
-nnetPreds = outOfSampleError(model.nnet, adult.test.clean.norm, type="class")
+outOfSampleError(model.nnet, adult.test.clean.norm, type="class")
 ```
 
 A pesar de disponer de una única capa oculta, el modelo ha sido capaz de obtener un resultado muy competitivo: $E_{out} = 15$%. Además, el número de fallos en cada clase está bastante equilibrado, casi tanto como en el modelo KNN con base radial:
@@ -547,21 +546,23 @@ Para concluir con los resultados obtenidos, vamos a hacer un estudio comparativo
 ```{r}
 library(ROCR)
 
-getPerfomance <- function(preds, norm = F){
+getPerfomance <- function(model, norm = F, newdata = adult.test.clean, nnetOrGlm=F,...){
   set.seed(1)
-  if(!norm)
-    pred = prediction(preds, adult.test.clean$income)
+  if(!nnetOrGlm)
+    preds = predict(object = model, newdata = newdata, ...)[,2]
   else
-    pred = prediction(preds, adult.test.clean.norm$income)
+    preds = predict(object = model, newdata = newdata, ...)
+  pred = prediction(preds, newdata$income)
   # tpr --> True Positive Rate
   # fpr --> False Positive Rate
   performance(pred, "tpr", "fpr") 
 }
-plot(getPerfomance(glmPred),col=2,lwd=2,main="Curvas ROC Para los distintos modelos estudiados") 
-plot(getPerfomance(rfpreds),col=3,lwd=2,add=T)
-plot(getPerfomance(svmPreds),lwd=2,col=3,add=T) 
-plot(getPerfomance(model_knn$fitted.values),lwd=2,col=4,add=T) 
-plot(getPerfomance(nnetPreds, norm=T),lwd=2,col=4,add=T) 
+plot(getPerfomance(model = glmModel, type="response", nnetOrGlm = T),
+     col=2,lwd=2,main="Curvas ROC Para los distintos modelos estudiados") 
+plot(getPerfomance(model = rf.tuned, type = "prob"),col=3,lwd=2,add=T)
+plot(getPerfomance(model = svmModelReg_09, type = "prob", probability = T),lwd=2,col=3,add=T)
+# plot(getPerfomance(model_knn$fitted.values),lwd=2,col=4,add=T)
+plot(getPerfomance(model = nNetModel, newdata = adult.test.clean.norm, type="raw"),lwd=2,col=4,add=T)
 abline(a=0,b=1,lwd=2,lty=2,col="gray") 
 legend("bottomright",col=c(2:5),lwd=2,legend=c("Regresión logística","Random Forest","SVM","KNN","Red Neuronal"),bty='n') 
 ```
