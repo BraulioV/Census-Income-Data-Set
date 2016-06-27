@@ -539,28 +539,8 @@ cat("Error obtenido en la clase >50K: ",
 
 Por tanto, la conclusión obtenida sobre éste modelo es, que a pesar de haber estado limitado por la implementación del paquete de `R`, hemos obtenido un resultado muy competitivos y de una alta calidad, tanto en cuanto a error fuera de la muestra como error en cada clase y equilibrio en clases desbalanceadas.
 
-<!-- # Normalización de las variables -->
+# Comparación de los modelos obtenidos
 
-<!-- # Selección de las técnicas y valoración de la idoneidad de las mismas frente a otras alternativas -->
-
-<!-- # Aplicación de la técnica -->
-
-<!-- ## Estimación de los parámetros -->
-
-<!-- ## Estimación de los hiperparámetros -->
-
-<!-- ## Error de generalización -->
-
-<!-- # Idoneidad de la función de regularización usada -->
-
-<!-- # Valoración de resultados -->
-
-<!-- # Justificación de la solución obtenida en base a la ténica usada y los datos. -->
-
-<!-- ## Dimensión VC del modelo -->
-
-<!-- ## Error de generalización del modelo -->
-
-<!-- ## Curva de aprendizaje del modelo -->
+Para concluir con los resultados obtenidos, vamos a hacer un estudio comparativo de todos los modelos que hemos ajustado en este proyecto. Para ello, vamos a representar la curva ROC de cada uno y realizar una tabla comparativa.
 
 # Referencias
