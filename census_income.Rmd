@@ -543,4 +543,8 @@ Por tanto, la conclusión obtenida sobre éste modelo es, que a pesar de haber e
 
 Para concluir con los resultados obtenidos, vamos a hacer un estudio comparativo de todos los modelos que hemos ajustado en este proyecto. Para ello, vamos a representar la curva ROC de cada uno y realizar una tabla comparativa.
 
+|        | Regresión logística | Random forest | Support Vector Machine | Vecino más cercano | Red Neuronal |
+|:------:|:-------------------:|:-------------:|:----------------------:|:------------------:|:------------:|
+$E_{out}$| 24,56%              | 18,1%         |  14,78%                |  16,52%            | 15,69%
+
 # Referencias
