@@ -553,21 +553,17 @@ $E_{out}$| 24,56%              | 18,1%         |  14,78%                |  16,52
 library(ROCR)
 
 getPerfomance <- function(model, norm = F, newdata = adult.test.clean, svmPred = F, nnetOrGlm=F,...){
-  set.seed(1)
-  print("holi")
-  if(!nnetOrGlm && !svmPred)
-    preds = predict(object = model, newdata = newdata, ...)[,2]
-  else if (!svmPred && nnetOrGlm)
-    preds = predict(object = model, newdata = newdata, ...)
-  else{
-    print("hey")
-    preds = attributes(predict(model, newdata, decision.values=T))$decision.values
-    preds = preds*-1
-    print(head(preds))
-  }
-    print("holi2")
+    set.seed(1)
+    if(!nnetOrGlm && !svmPred)
+        preds = predict(object = model, newdata = newdata, ...)[,2]
+    else if (!svmPred && nnetOrGlm)
+        preds = predict(object = model, newdata = newdata, ...)
+    else{
+        preds = attributes(predict(model, newdata, decision.values=T))$decision.values
+        preds = preds*-1
+        print(head(preds))
+    }
     pred = prediction(preds, newdata$income)
-    print("hol3")
     # tpr --> True Positive Rate
     # fpr --> False Positive Rate
     performance(pred, "tpr", "fpr") 
@@ -575,10 +571,10 @@ getPerfomance <- function(model, norm = F, newdata = adult.test.clean, svmPred =
 plot(getPerfomance(model = glmModel, type="response", nnetOrGlm = T),
      col=2,lwd=2,main="Curvas ROC Para los distintos modelos estudiados") 
 plot(getPerfomance(model = rf.tuned, type = "prob"),col=3,lwd=2,add=T)
-plot(getPerfomance(model = svmModelReg_09, svmPred = T),lwd=2,col=3,add=T)
-plot(getPerfomance(model_knn$fitted.values),lwd=2,col=4,add=T)
+plot(getPerfomance(model = svmModelReg_09, svmPred = T),lwd=2,col=4,add=T)
+plot(getPerfomance(model_knn$fitted.values),lwd=2,col=5,add=T)
 plot(getPerfomance(model = model.nnet, newdata = adult.test.clean.norm,
-  type="raw", nnetOrGlm = T),lwd=2,col=5,add=T)
+  type="raw", nnetOrGlm = T),lwd=2,col=6,add=T)
 abline(a=0,b=1,lwd=2,lty=2,col="gray")
 legend("bottomright",col=c(2:6),lwd=2,legend=c("Regresión logística","Random Forest","SVM","KNN","Red Neuronal"),bty='n') 
 ```
