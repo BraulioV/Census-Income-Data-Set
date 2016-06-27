@@ -552,7 +552,8 @@ $E_{out}$| 24,56%              | 18,1%         |  14,78%                |  16,52
 ```{r}
 library(ROCR)
 
-getPerfomance <- function(model, newdata = adult.test.clean, svmPred = F, nnetOrGlm=F, calculatePred = T,...){
+getPerfomance <- function(model, newdata = adult.test.clean, svmPred = F, 
+                          nnetOrGlm=F, calculatePred = T,...){
     set.seed(1)
     if(calculatePred) {
         if(!nnetOrGlm && !svmPred)
@@ -563,10 +564,9 @@ getPerfomance <- function(model, newdata = adult.test.clean, svmPred = F, nnetOr
             preds = attributes(predict(model, newdata, decision.values=T))$decision.values
             preds = preds*-1
         }
-    } else {
+    } else
         preds = as.numeric(model)
-        print(head(preds))
-    }
+    
     pred = prediction(preds, newdata$income)
     # tpr --> True Positive Rate
     # fpr --> False Positive Rate
@@ -576,11 +576,13 @@ plot(getPerfomance(model = glmModel, type="response", nnetOrGlm = T),
      col=2,lwd=2,main="Curvas ROC Para los distintos modelos estudiados") 
 plot(getPerfomance(model = rf.tuned, type = "prob"),col=3,lwd=2,add=T)
 plot(getPerfomance(model = svmModelReg_09, svmPred = T),lwd=2,col=4,add=T)
-plot(getPerfomance(model_knn$prob[,2], newdata = adult.test.clean.norm, calculatePred = F),lwd=2,col=5,add=T)
+plot(getPerfomance(model_knn$prob[,2], newdata = adult.test.clean.norm, 
+                   calculatePred = F),lwd=2,col=5,add=T)
 plot(getPerfomance(model = model.nnet, newdata = adult.test.clean.norm,
   type="raw", nnetOrGlm = T),lwd=2,col=6,add=T)
-abli>ne(a=0,b=1,lwd=2,lty=2,col="gray")
-legend("bottomright",col=c(2:6),lwd=2,legend=c("Regresión logística","Random Forest","SVM","KNN","Red Neuronal"),bty='n')
+abline(a=0,b=1,lwd=2,lty=2,col="gray")
+legend("bottomright",col=c(2:6),lwd=2,legend=c("Regresión logística",
+            "Random Forest","SVM","KNN","Red Neuronal"),bty='n')
 ```
 
 
