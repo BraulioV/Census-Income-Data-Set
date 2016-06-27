@@ -250,7 +250,7 @@ glmModel = glm(income ~ ., data = fullSet.clean,
 glmPred = predictorGLM(glmModel, pintar=T)
 ```
 
-Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a comprobar otros modelos. El principal problema de la regresión logística, es que se ve muy afectado por las clases desbalanceadas como es el caso, donde la clase perteneciente al conjunto ">50K" tiene muchas menos instancias que la clase "<=50K" por lo que el modelo puede ajustar muy bien la clase mayoritaria, mientras que la clase minoritaria el modelo prácticamente la obvia. 
+Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a comprobar otros modelos. El principal problema de la regresión logística, es que se ve muy afectado por las clases desbalanceadas como es el caso, donde la clase perteneciente al conjunto ">50K" tiene muchas menos instancias que la clase "<=50K" por lo que el modelo puede ajustar muy bien la clase mayoritaria, mientras que la clase minoritaria prácticamente la obvia. 
 
 ```{r}
 cat("Error obtenido en la clase <=50K: ", 
@@ -546,25 +546,34 @@ Para concluir con los resultados obtenidos, vamos a hacer un estudio comparativo
 ```{r}
 library(ROCR)
 
-getPerfomance <- function(model, norm = F, newdata = adult.test.clean, nnetOrGlm=F,...){
+getPerfomance <- function(model, norm = F, newdata = adult.test.clean, svmPred = F, nnetOrGlm=F,...){
   set.seed(1)
-  if(!nnetOrGlm)
+  print("holi")
+  if(!nnetOrGlm && !svmPred)
     preds = predict(object = model, newdata = newdata, ...)[,2]
-  else
+  else if (!svmPred && nnetOrGlm)
     preds = predict(object = model, newdata = newdata, ...)
-  pred = prediction(preds, newdata$income)
-  # tpr --> True Positive Rate
-  # fpr --> False Positive Rate
-  performance(pred, "tpr", "fpr") 
+  else{
+    print("hey")
+    preds = attributes(predict(model, newdata, decision.values=T))$decision.values
+  }
+    print("holi2")
+    pred = prediction(preds, newdata$income)
+    print("hol3")
+    # tpr --> True Positive Rate
+    # fpr --> False Positive Rate
+    performance(pred, "tpr", "fpr") 
 }
 plot(getPerfomance(model = glmModel, type="response", nnetOrGlm = T),
      col=2,lwd=2,main="Curvas ROC Para los distintos modelos estudiados") 
-plot(getPerfomance(model = rf.tuned, type = "prob"),col=3,lwd=2,add=T)
-plot(getPerfomance(model = svmModelReg_09, type = "prob", probability = T),lwd=2,col=3,add=T)
+# plot(getPerfomance(model = rf.tuned, type = "prob"),col=3,lwd=2,add=T)
+plot(getPerfomance(model = svmModelReg_09, svmPred = T),lwd=2,col=3,add=T)
+
 # plot(getPerfomance(model_knn$fitted.values),lwd=2,col=4,add=T)
-plot(getPerfomance(model = nNetModel, newdata = adult.test.clean.norm, type="raw"),lwd=2,col=4,add=T)
-abline(a=0,b=1,lwd=2,lty=2,col="gray") 
-legend("bottomright",col=c(2:5),lwd=2,legend=c("Regresión logística","Random Forest","SVM","KNN","Red Neuronal"),bty='n') 
+# plot(getPerfomance(model = model.nnet, newdata = adult.test.clean.norm, 
+  # type="raw", nnetOrGlm = T),lwd=2,col=5,add=T)
+abline(a=0,b=1,lwd=2,lty=2,col="gray")
+legend("bottomright",col=c(2:6),lwd=2,legend=c("Regresión logística","Random Forest","SVM","KNN","Red Neuronal"),bty='n') 
 ```
 
 
