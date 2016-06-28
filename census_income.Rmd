@@ -236,6 +236,10 @@ La dimensión del modelo lineal la mediremos en función de la dimensión de **V
 
 Con esto vemos, que la dimensión $d_{VC}$ es basntante competitiva y puede comportarse bien en el problema.
 
+## Parámetros del modelo
+
+En el modelo de regresión logística, el principal parámetro a configurar es el vector de pesos $w$ que utiliza la regresión. Este vector de pesos se puede inicializar a un valor, fijo o un valor aleatorio, que de algún modo marca el punto de inicio del algoritmo de regresión. Este parámetro se irá actualizando en la regresión logística conforme se vayan comprobando nuevos puntos.
+
 ```{r}
 predictorGLM <- function(model, pintar = T){
   ypred = predict(model, adult.test.clean, type="response")
@@ -243,6 +247,7 @@ predictorGLM <- function(model, pintar = T){
   ypred[ypred > 0.5] = "<=50K"
 
   if(pintar){
+    print("Matriz de confusión datos de test")
     print(table(predict=ypred, truth=(adult.test.clean$income)))
   }
   cat("Eout = ",mean((ypred != adult.test.clean$income)*1))
@@ -286,7 +291,11 @@ Respecto a los datos que tenemos (30162 datos de entrenamiento y 15060 datos de 
 
 ## Parámetros del modelo
 
+El parámetro que utiliza el modelo *Random Forest*, es el parámetro $m$, que indica el número de variables que se escogeran de forma aleatoria para crear un modelo de árbol para ajustar los datos cada vez que el modelo vaya a ajustar un nuevo árbol.
+
 ## Hiperparámetros del modelo
+
+En este caso, como hiperparámetro se utiliza el **número de árboles** que generará el modelo para ajustar los datos. En cierto modo, es similar a la regularización, ya que a mayor número de árboles, más sobreajustaremos el modelo, mientras que con un menor número de árboles, menos se sobreajusta el modelo.
 
 ## Complejidad del modelo
 
@@ -312,6 +321,7 @@ outOfSampleError <- function(model, newdata = adult.test.clean,  printTable = T,
 }
 set.seed(1)
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
+print("Matriz de confusión datos de train")
 print(rf.clean$confusion)
 ```
 
@@ -332,6 +342,7 @@ Ahora bien, ¿podemos llegar a obtener un error más bajo cambiando éste parám
 set.seed(1)
 rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), 
       y=adult.train.clean$income, doBest=T)
+print("Matriz de confusión datos de train")
 print(rf.tuned$confusion)
 ```
 
@@ -341,7 +352,7 @@ Lo último que podemos preguntarnos es, ¿cómo se comporta el modelo con los da
 
 ```{r}
 outOfSampleError(rf.tuned)
-plot(rf.clean$predicted, col = c(3,2))
+plot(rf.clean$predicted, col = c(3,2), main = "Nº de datos predichos para cada clase por Random Forest")
 cat("Error obtenido en la clase <=50K: ", 
     2700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
 cat("Error obtenido en la clase >50K: ", 
@@ -426,7 +437,7 @@ outOfSampleError(svmModelReg_25)
 Como podemos ver, los resultados cambian dependiendo del valor de $\lambda$ que tome el modelo. Frente al valor de $\lambda$ del primer modelo $SVM$, que era 1, el resto de modelos empeoran al cambiar el valor de la regularización, pasando de una gran deterioro del modelo en valores pequeños de $\lambda$ ($0,001$ y $0,01$) a un deterioro más pequeño con $\lambda = 0,1$. En todos estos casos, estábamos sobreaustando el modelo. Sin embargo, con $\lambda = 0,9$ el modelo es capaz de mejorar un poco al primer modelo y un con un $\lambda$ mayor, podíamos llegar a subajustar el modelo. También podemos ver como si hacemos el valor de $\lambda$ mayor, el modelo no realiza mejoras significativas, y en este caso, incluso empeora un poco.
 
 ```{r}
-plot(svmModelReg_09$fitted, col = c(3,2))
+plot(svmModelReg_09$fitted, col = c(3,2), main = "Nº de datos predichos para cada clase por SVM")
 cat("Error obtenido en la clase <=50K: ", 
     71400/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
 cat("Error obtenido en la clase >50K: ", 
@@ -521,6 +532,7 @@ cat("Eout = ",mean((model_knn$fitted.values != adult.test.clean$income)*1))
 El error de test obtenido ha sido del 16%, al igual que el error de validación cruzada. En este caso el modelo ha conseguido corregir las clases desbalanceadas que había, equilibrando el error obtenido en una y en otra:
 
 ```{r}
+plot(model_knn$fitted.values, col = c(4,2), main = "Nº de datos predichos para cada clase por KNN")
 cat("Error obtenido en la clase <=50K: ", 
     94700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
 cat("Error obtenido en la clase >50K: ", 
