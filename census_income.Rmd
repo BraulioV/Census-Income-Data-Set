@@ -554,6 +554,10 @@ Al tener un problema de dimensión media/alta ($d=15$) y tantas instancias ($N =
 
 Por último, al igual que otros modelos usados en este proyecto, las _Redes Neuronales_ son buenos modelos para clases desbalanceadas, tal y como se indica en [@unbalanced].
 
+### Dimensión VC del modelo
+
+Tal y como se explica en [@lfd], la $d_{VC}$ para una sigmoid general puede ser infinita. Para el caso de la sigmoid $tanh(\cdot)$, con $sign(\cdot)$ en el nodo salida, tendríamos $d_{VC} = O(VQ)$ donde $V$ es el número de capas ocultas y $Q$ el número de pesos.
+
 ## Normalización de los datos
 
 Para normalizar los datos, vamos a usar el mismo resultado usado en el modelo del _Vecino más cercano_. 
