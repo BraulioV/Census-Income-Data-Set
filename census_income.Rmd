@@ -575,7 +575,11 @@ Table: Comparativa de los resultados de los modelos ajustados
 
 En la Tabla 1 vemos una comparativa de los modelos obtenidos. El modelo con menor $E_{out}$ ha sido _Support Vector Machine_ con un kernel radial. Éste modelo también ha conseguido clasificar ejemplos de la clase minoritaria, `>50K`, con menos del 50% de error, aunque ha sido superado por la _Red Neuronal_, que lo ha conseguido con un error menor al 40%. Ahora bien, el modelo _Red Neuronal_ ha jugado con desventaja, al no poder ajustar uno de los parámetros que más flexibilidad da al modelo: el númerod de capas ocultas. A pesar de esta desventaja, ha logrado ser el segundo mejor modelo.
 
-El peor modelo ha sido la _Regresión logística_, ya que ha obviado la clase minoritaria completamente.
+El peor modelo ha sido la _Regresión logística_, ya que ha obviado la clase minoritaria completamente. Éste modelo ha obtenido un 24% de error, ya que ha clasificado de forma correcta todos los ejemplos de la clase `<=50K` y sólo ha fallado en los de la clase `>50K`. Al representar los datos de esta última clase la minoría, el número obtenido es relativamente bajo pero el modelo obtenido como tal es muy malo. El modelo _Random Forest_ también ha hecho una clasificación bastante mala, ya que el error obtenido en la clase `>50K` ha sido demasiado alto. Por tanto, al no haber podido trabajar correctamente con datos desbalanceados estos dos modelos han obtenidos los peores resultados.
+
+Por último, el modelo del _Vecino más cercano_ con base radial ha obtenido buenos resultados, pero en comparación con _Support Vector Machine_ o _Red Neuronal_ ha obtenido un error mayor tanto fuera de la muestra como en la clase minoritaria. Ha obtenido un error menor en `<=50K` que _Red Neuronal_, 8,34 frente a 8,65, pero esta diferencia no es significativa.
+
+## Curvas ROC de los modelos obtenidos
 
 ```{r}
 library(ROCR)
