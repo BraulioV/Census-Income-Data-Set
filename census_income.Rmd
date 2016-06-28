@@ -449,6 +449,10 @@ Hay varios kernel distintos para actualizar los pesos, como por ejemplo una _gau
 
 $$Gauss\;kernel =  \frac{1}{\sqrt{2\pi}}\mathrm{exp}\bigg(-\frac{d^2}{2}\bigg) \qquad\ Inversion\;kernel =  \frac{1}{|d|}$$
 
+### Dimensión VC del modelo del Vecino más cercano
+
+Al igual que _Random Forest_, la $d_{VC}$ de éste modelo es $d_{VC} = \infty$. Esto se cumple tanto para la técnica $1-NN$ como para la técnica $k-NN$ y se debe a que el conjunto de hipótesis $\mathcal{H}$ que genera el modelo ajusta con $E_{in} = 0$ cualquier dataset, sin importar el tamaño tal y como se indica en [@lfd].
+
 ### Normalización de los datos
 
 En primer lugar, vamos a normalizar las variables numéricas de nuestro modelo: `age`, `fnlwgt`, `capital.gain`, `capital.loss` y `hours.per.week`.
