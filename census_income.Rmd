@@ -691,26 +691,24 @@ norm = NULL
 predice_na <- function(attr, noselectvars, test_dataset = adult.test.norm, 
                        train_dataset = adult.train.norm, dataset = adult.train.clean.norm) {
     # el vector no selectvars siempre tendrá dos variables string
-    model <- nnet(x = subset(dataset, select=c(-which(colnames(dataset)==noselectvars[1]), 
-                -which(colnames(dataset)==noselectvars[2]), -which(colnames(dataset)==attr))),
-                y = dataset[,attr],maxit = 100, size = 8, decay = 1, trace = F)
+    model <- nnet(formula = dataset[,which(colnames(dataset)==attr)] ~ ., maxit = 100,
+                  data = subset(dataset, select=-which(colnames(dataset) == noselectvars)),
+                  size = 8, decay = 1, trace = F)
     pred_train <- predict(object = model, newdata = subset(train_dataset[is.na(train_dataset[,attr]),],
-                        select=c(-which(colnames(dataset)==noselectvars[1]), 
-                    -which(colnames(dataset)==noselectvars[2]))), type = "class")
+                         select=-which(colnames(train_dataset) == noselectvars)), type = "class")
     pred_test <- predict(object = model, newdata = subset(test_dataset[is.na(test_dataset[,attr]),],
-                        select=c(-which(colnames(dataset)==noselectvars[1]), 
-                    -which(colnames(dataset)==noselectvars[2]))), type = "class")
+                         select=-which(colnames(test_dataset) == noselectvars)), type = "class")
     list(pred_train, pred_test)
 }
 
-workclass = predice_na(attr = "workclass", noselectvars = c("occupation", "country"))
+workclass = predice_na(attr = "workclass", noselectvars = c("country", "occupation"))
 adult.train$workclass[is.na(adult.train$workclass)] = workclass
 adult.train.norm$workclass[is.na(adult.train.norm$workclass)] = workclass
 adult.test$workclass[is.na(adult.test$workclass)] = workclass
 adult.test.norm$workclass[is.na(adult.test.norm$workclass)] = workclass
 
 # debemos eliminar las columnas con NA para que funcione la función predict
-# workclass.nnet = nnet(formula = workclass ~ ., maxit=100, 
+# workclass.nnet = nnet(formula = adult.train.clean[,2] ~ ., maxit=100,
 #         data = subset(adult.train.clean.norm, select=c(-occupation, -country)),
 #         size = 8, decay=1, trace=F)
 # pred_workclass = predict(object = workclass.nnet, 
