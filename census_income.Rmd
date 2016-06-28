@@ -250,15 +250,22 @@ glmModel = glm(income ~ ., data = fullSet.clean,
 glmPred = predictorGLM(glmModel, pintar=T)
 ```
 
-Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a comprobar otros modelos. El principal problema de la regresión logística, es que se ve muy afectado por las clases desbalanceadas como es el caso, donde la clase perteneciente al conjunto ">50K" tiene muchas menos instancias que la clase "<=50K" por lo que el modelo puede ajustar muy bien la clase mayoritaria, mientras que la clase minoritaria prácticamente la obvia. 
+Como podemos ver, el error que genera la regresión lineal, tomando todas las variables como predictoras, genera un error de aproximadamente el 24%. Como vemos, el error generado por la regresión logística es bastante alto y por ello, vamos a comprobar otros modelos. El principal problema de la regresión logística, es que se ve muy afectado por las clases desbalanceadas como es el caso, donde la clase perteneciente al conjunto `>50K` tiene muchas menos instancias que la clase `<=50K` por lo que el modelo puede ajustar muy bien la clase mayoritaria, mientras que la clase minoritaria prácticamente la obvia. 
 
 ```{r}
 cat("Error obtenido en la clase <=50K: ", 
-    2700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
+    0/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
 cat("Error obtenido en la clase >50K: ", 
-    269900/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
+    370000/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
 ```
 
+Como vemos, el modelo no ha fallado ni un solo caso de la clase `<=50K`, pero ha fallado todos los casos `>50K`. Esto se debe a que todas las instancias de test han sido clasificadas como `<=50K`.
+
+```{r}
+plot(glmModel, which=c(1))
+```
+
+En esta gráfica vemos cómo el error del modelo sigue una tendencia no lineal, esto nos indica que debemos ajustar un modelo más complejo para poder ajustar bien los datos.
 
 # Ajustando un modelo _Random Forest_
 
@@ -310,7 +317,7 @@ rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income),
       y=adult.train.clean$income, doBest=T)
 ```
 
-Como vemos en la gráfica, con $m=3$ obtenemos el modelo óptimo. Por tanto, nos quedamos con el modelo generado anteriormente.
+Como vemos en la gráfica, con $m=2$ obtenemos el modelo óptimo con menor error, por tanto, en vez de quedarnos con el modelo generado anteriormente con $m=3$, nos quedamos con el mejor obtenido según el error _Out-Of-Bag_.
 
 Lo último que podemos preguntarnos es, ¿cómo se comporta el modelo con los datos de test? Para saberlo, generamos la tabla de confusión:
 
@@ -322,7 +329,7 @@ cat("Error obtenido en la clase >50K: ",
     269900/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
 ```
 
-El $E_{out}$ obtenido es muy parecido al _Out-Of-Bag_, ya que éste es una buen estimador del error fuera de la muestra tal y como hemos compobado.
+El $E_{out}$ obtenido es muy parecido al _Out-Of-Bag_ aunque algo mayor (17,9 en train frente a 18,1 en test), ya que éste es una buen estimador del error fuera de la muestra tal y como hemos compobado.
 
 En esta matriz de confusión se aprecia lo desbalanceadas que están las clases en este problema: en la clase `<=50K` hemos obtenido un error del $0,2$%, mientras que en la clase `>50K` el error ha sido del 72%. 
 
@@ -393,9 +400,18 @@ outOfSampleError(svmModelReg_01)
 set.seed(1)
 svmModelReg_09 = svm(income ~ ., data = adult.train.clean, kernel = "radial", cost = 0.9)
 outOfSampleError(svmModelReg_09)
+svmModelReg_25 = svm(income ~ ., data = adult.train.clean, kernel = "radial", cost = 2.5)
+outOfSampleError(svmModelReg_25)
 ```
 
-Como podemos ver, los resultados cambian dependiendo del valor de $\lambda$ que tome el modelo. Frente al valor de $\lambda$ del primer modelo $SVM$, que era 1, el resto de modelos empeoran al cambiar el valor de la regularización, pasando de una gran deterioro del modelo en valores pequeños de $\lambda$ ($0,001$ y $0,01$) a un deterioro más pequeño con $\lambda = 0,1$. Sin embargo, con $\lambda = 0,9$ el modelo es capaz de mejorar un poco al primer modelo.
+Como podemos ver, los resultados cambian dependiendo del valor de $\lambda$ que tome el modelo. Frente al valor de $\lambda$ del primer modelo $SVM$, que era 1, el resto de modelos empeoran al cambiar el valor de la regularización, pasando de una gran deterioro del modelo en valores pequeños de $\lambda$ ($0,001$ y $0,01$) a un deterioro más pequeño con $\lambda = 0,1$. En todos estos casos, estábamos sobreaustando el modelo. Sin embargo, con $\lambda = 0,9$ el modelo es capaz de mejorar un poco al primer modelo y un con un $\lambda$ mayor, podíamos llegar a subajustar el modelo.
+
+```{r}
+cat("Error obtenido en la clase <=50K: ", 
+    71400/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
+cat("Error obtenido en la clase >50K: ", 
+    151300/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
+```
 
 ## Vecino más cercano con base radial
 
@@ -544,9 +560,12 @@ Por tanto, la conclusión obtenida sobre éste modelo es, que a pesar de haber e
 Para concluir con los resultados obtenidos, vamos a hacer un estudio comparativo de todos los modelos que hemos ajustado en este proyecto. Para ello, vamos a representar la curva ROC de cada uno y realizar una tabla comparativa.
 
 
-|        | Regresión logística | Random forest | Support Vector Machine | Vecino más cercano | Red Neuronal |
-|:------:|:-------------------:|:-------------:|:----------------------:|:------------------:|:------------:|
-$E_{out}$| 24,56%              | 18,1%         |  14,78%                |  16,52%            | 15,69%
+|                   | Regresión logística | Random forest | Support Vector Machine | Vecino más cercano | Red Neuronal |
+|:-----------------:|:-------------------:|:-------------:|:----------------------:|:------------------:|:------------:|
+|     $E_{out}$     | 24,56%              | 18,1%         |  14,78%                |  16,52%            | 15,69%       |
+|  $E_{out}^{>50K}$ | 100%                | $72,95$%      |  
+| $E_{out}^{<=50K}$ | 0%                  | $0.24$%
+
 
 
 ```{r}
