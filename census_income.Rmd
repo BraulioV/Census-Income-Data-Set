@@ -679,9 +679,15 @@ La idea de esto es recuperar todas las instancias de datos que hemos eliminado a
 Como hemos dicho antes, las variables que tienen valores perdidos son _Workclass_, _Occupation_ y _Country_. Vamos a hacer tres modelos diferentes de red neuronal, usando los mismos parámetros que se han usado anteriormente.
 
 ```{r}
+set.seed(1)
+# normalizamos todos los datos de la clase
+norm = normalizar_maxmin(data = adult.train, data_test = adult.test)
+adult.train.norm = norm[[1]]
+adult.test.norm = norm[[2]]
+norm = NULL
 workclass.nnet = nnet(formula = workclass ~ ., maxit=10000,
     data = adult.train.clean.norm, size = 10, decay=0.1,trace=F)
-pred_workclass = predict(object = workclass.nnet, newdata = adult.train[is.na(adult.train$workclass),], type="class")
+pred_workclass = predict(object = workclass.nnet, newdata = adult.train.norm[is.na(adult.train$workclass),], type="class")
 adult.train$workclass[is.na(adult.train$workclass)] = pred_workclass
 ```
 
