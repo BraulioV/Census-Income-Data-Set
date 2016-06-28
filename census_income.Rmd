@@ -556,7 +556,7 @@ Por último, al igual que otros modelos usados en este proyecto, las _Redes Neur
 
 ### Dimensión VC del modelo
 
-La dimensión $d_{VC}$ para una red neuronal sigmoidal, generalmente, puede ser infinita. Pero, para el sigmoide $tanh(\cdot)$, donde el nodo salida es el $sign(\cdot)$, se puede ver que $d_{VC} = O(VQ)$ donde $V$ es el número de capas ocultas y $Q$ el número de pesos. 
+La dimensión $d_{VC}$ para una red neuronal sigmoidal, generalmente, puede ser infinita. Pero, para el sigmoide $tanh(\cdot)$, donde el nodo salida es el $sign(\cdot)$, se puede ver que $$d_{VC} = O(VQ)$$ donde $V$ es el número de capas ocultas y $Q$ el número de pesos. 
 
 ## Normalización de los datos
 
@@ -668,5 +668,7 @@ En base a los resultados, y el análisis de los errores que obtiene cada modelo,
 Respecto a la hora de elegir entre estos dos modelos, podemos elegir el modelo más sencillo, ya que, si seguimos el criterio de la \textit{Navaja de Ockham}, si tenemos dos modelos que se comportan de forma similar, se debe elegir el modelo más "simple". Tal y como hemos visto, la dimensión $d_{VC}$ de los modelos $SVM$ puede llegar a ser infinita, mientras que para los modelos de redes neuronales, esta dimensión se establece como $d_{VC} = O(VQ)$, por lo que, la red neuronal es un modelo un poco más sencillo en este caso que el modelo $SVM$, a pesar de que el error es un poco peor. Otro aspecto a tomar en cuenta en la elección del modelo es la facilidad para poder explicar lo que hace este modelo para predecir los datos, y por ello en este aspecto gana el modelo $SVM$.
 
 Por todo esto, el mejor modelo elegido es \textbf{el modelo de \textit{Red Neuronal}}.
+
+# Ajustando un modelo de red neuronal recuperando los datos perdidos
 
 # Referencias
