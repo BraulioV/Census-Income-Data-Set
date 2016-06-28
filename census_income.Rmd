@@ -673,6 +673,15 @@ Por todo esto, el mejor modelo elegido es \textbf{el modelo de \textit{Red Neuro
 
 # Ajustando un modelo de red neuronal recuperando los datos perdidos
 
-La idea de esto es recuperar todas las instancias de datos que hemos eliminado al contener valores perdidos. La forma de recuperar estos datos va a consistir en tratar de predecir esos datos con un modelo, y una vez predichos, ver cómo se comporta el nuevo modelo con todo el conjunto de datos al completo frente al que teníamos sin los datos perdidos. 
+La idea de esto es recuperar todas las instancias de datos que hemos eliminado al contener valores perdidos. La forma de recuperar estos datos va a consistir en tratar de predecir esos datos con un modelo, y una vez predichos, ver cómo se comporta el nuevo modelo con todo el conjunto de datos al completo frente al que teníamos sin los datos perdidos.
+
+Como hemos dicho antes, las variables que tienen valores perdidos son _Workclass_, _Occupation_ y _Country_. Vamos a hacer tres modelos diferentes de red neuronal, usando los mismos parámetros que se han usado anteriormente.
+
+```{r}
+workclass.nnet = nnet(formula = workclass ~ ., maxit=10000,
+    data = adult.train.clean.norm, size = 10, decay=0.1,trace=F)
+pred_workclass = predict(object = workclass.nnet, newdata = adult.train[is.na(adult.train$workclass),], type="class")
+adult.train$workclass[is.na(adult.train$workclass)] = pred_workclass
+```
 
 # Referencias
