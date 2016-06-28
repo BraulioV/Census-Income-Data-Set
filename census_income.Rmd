@@ -682,58 +682,6 @@ La idea de esto es recuperar todas las instancias de datos que hemos eliminado a
 
 Como hemos dicho antes, las variables que tienen valores perdidos son _Workclass_, _Occupation_ y _Country_. Vamos a hacer tres modelos diferentes de red neuronal, esta vez con regularización _early stopping_ (usando un límite de cien iteraciones).
 
-```{r}
-set.seed(1)
-# normalizamos todos los datos de la clase
-norm = normalizar_maxmin(data = adult.train, data_test = adult.test)
-adult.train.norm = norm[[1]]
-adult.test.norm = norm[[2]]
-norm = NULL
-
-# debemos eliminar las columnas con NA para que funcione la función predict
-workclass.nnet = nnet(formula = workclass ~ ., maxit=100, 
-        data = subset(adult.train.clean.norm, select=c(-occupation, -country)),
-        size = 8, decay=1, trace=F)
-pred_workclass = predict(object = workclass.nnet, 
-            newdata = subset(adult.train.norm[is.na(adult.train$workclass),], 
-            select=c(-occupation, -country)), type="class")
-pred_test_workclass = predict(object = workclass.nnet, 
-            newdata = subset(adult.test.norm[is.na(adult.test$workclass),],
-            select = c(-occupation, -country)), type = "class")
-adult.train$workclass[is.na(adult.train$workclass)] = pred_workclass
-adult.train.norm$workclass[is.na(adult.train.norm$workclass)] = pred_workclass 
-adult.test$workclass[is.na(adult.test$workclass)] = pred_test_workclass
-adult.test.norm$workclass[is.na(adult.test.norm$workclass)] = pred_test_workclass
-
-occupation.nnet = nnet(formula = occupation ~ ., maxit=100, 
-        data = subset(adult.train.clean.norm, select=c(-workclass, -country)),
-        size = 8, decay=1, trace=F)
-pred_occupation = predict(object = occupation.nnet, 
-            newdata = subset(adult.train.norm[is.na(adult.train$occupation),], 
-            select=c(-workclass, -country)), type="class")
-pred_test_occupation = predict(object = occupation.nnet, 
-            newdata = subset(adult.test.norm[is.na(adult.test$occupation),], 
-            select=c(-workclass, -country)), type="class")
-adult.train$occupation[is.na(adult.train$occupation)] = pred_occupation
-adult.train.norm$occupation[is.na(adult.train.norm$occupation)] = pred_occupation
-adult.test$occupation[is.na(adult.test$occupation)] = pred_test_occupation
-adult.test.norm$occupation[is.na(adult.test.norm$occupation)] = pred_test_occupation
-
-country.nnet = nnet(formula = country ~ ., maxit=100, 
-        data = subset(adult.train.clean.norm, select=c(-workclass, -occupation)),
-        size = 8, decay=1, trace=F)
-pred_country = predict(object = country.nnet, 
-            newdata = subset(adult.train.norm[is.na(adult.train$country),], 
-            select=c(-workclass, -occupation)), type="class")
-pred_test_country = predict(object = country.nnet, 
-            newdata = subset(adult.test.norm[is.na(adult.test$country),], 
-            select=c(-workclass, -occupation)), type="class")
-adult.train$country[is.na(adult.train$country)] = pred_country
-adult.train.norm$country[is.na(adult.train.norm$country)] = pred_country
-adult.test$country[is.na(adult.test$country)] = pred_test_country
-adult.test.norm$country[is.na(adult.test.norm$country)] = pred_test_country
-```
-
 <!-- ```{r} -->
 <!-- set.seed(1) -->
 <!-- # normalizamos todos los datos de la clase -->
@@ -742,41 +690,96 @@ adult.test.norm$country[is.na(adult.test.norm$country)] = pred_test_country
 <!-- adult.test.norm = norm[[2]] -->
 <!-- norm = NULL -->
 
-<!-- # debemos quitar las variables con NA para poder predecir correctamente -->
-<!-- predice_na <- function(attr, noselectvars, test_dataset = adult.test.norm,  -->
-<!--                        train_dataset = adult.train.norm, dataset = adult.train.clean.norm) { -->
-<!--     # el vector no selectvars siempre tendrá dos variables string -->
-<!--     model <- nnet(formula = dataset[,which(colnames(dataset)==attr)] ~ ., maxit = 100, -->
-<!--                   data = subset(dataset, select=c(-which(colnames(dataset) == noselectvars[1]), -->
-<!--                                                   -which(colnames(dataset) == noselectvars[2]))), -->
-<!--                   size = 8, decay = 1, trace = T) -->
-<!--     pred_train <- predict(object = model, newdata = subset(train_dataset[is.na(train_dataset[,attr]),], -->
-<!--                          select=c(-which(colnames(train_dataset) == noselectvars[1]), -->
-<!--                                   -which(colnames(train_dataset) == noselectvars[2]))), type = "class") -->
-<!--     print(pred_train) -->
-<!--     pred_test <- predict(object = model, newdata = subset(test_dataset[is.na(test_dataset[,attr]),], -->
-<!--                          select=-which(colnames(test_dataset) == noselectvars)), type = "class") -->
-<!--     list(pred_train, pred_test) -->
-<!-- } -->
+<!-- # debemos eliminar las columnas con NA para que funcione la función predict -->
+<!-- workclass.nnet = nnet(formula = workclass ~ ., maxit=100,  -->
+<!--         data = subset(adult.train.clean.norm, select=c(-occupation, -country)), -->
+<!--         size = 8, decay=1, trace=F) -->
+<!-- pred_workclass = predict(object = workclass.nnet,  -->
+<!--             newdata = subset(adult.train.norm[is.na(adult.train$workclass),],  -->
+<!--             select=c(-occupation, -country)), type="class") -->
+<!-- pred_test_workclass = predict(object = workclass.nnet,  -->
+<!--             newdata = subset(adult.test.norm[is.na(adult.test$workclass),], -->
+<!--             select = c(-occupation, -country)), type = "class") -->
+<!-- adult.train$workclass[is.na(adult.train$workclass)] = pred_workclass -->
+<!-- adult.train.norm$workclass[is.na(adult.train.norm$workclass)] = pred_workclass  -->
+<!-- adult.test$workclass[is.na(adult.test$workclass)] = pred_test_workclass -->
+<!-- adult.test.norm$workclass[is.na(adult.test.norm$workclass)] = pred_test_workclass -->
 
-<!-- workclass = predice_na(attr = "workclass", noselectvars = c("country", "occupation")) -->
-<!-- adult.train$workclass[is.na(adult.train$workclass)] = workclass[[1]] -->
-<!-- adult.train.norm$workclass[is.na(adult.train.norm$workclass)] = workclass[[1]] -->
-<!-- adult.test$workclass[is.na(adult.test$workclass)] = workclass[[2]] -->
-<!-- adult.test.norm$workclass[is.na(adult.test.norm$workclass)] = workclass[[2]] -->
+<!-- occupation.nnet = nnet(formula = occupation ~ ., maxit=100,  -->
+<!--         data = subset(adult.train.clean.norm, select=c(-workclass, -country)), -->
+<!--         size = 8, decay=1, trace=F) -->
+<!-- pred_occupation = predict(object = occupation.nnet,  -->
+<!--             newdata = subset(adult.train.norm[is.na(adult.train$occupation),],  -->
+<!--             select=c(-workclass, -country)), type="class") -->
+<!-- pred_test_occupation = predict(object = occupation.nnet,  -->
+<!--             newdata = subset(adult.test.norm[is.na(adult.test$occupation),],  -->
+<!--             select=c(-workclass, -country)), type="class") -->
+<!-- adult.train$occupation[is.na(adult.train$occupation)] = pred_occupation -->
+<!-- adult.train.norm$occupation[is.na(adult.train.norm$occupation)] = pred_occupation -->
+<!-- adult.test$occupation[is.na(adult.test$occupation)] = pred_test_occupation -->
+<!-- adult.test.norm$occupation[is.na(adult.test.norm$occupation)] = pred_test_occupation -->
 
-<!-- occupation = predice_na(attr = "occupation", noselectvars = c("country", "workclass")) -->
-<!-- adult.train$occupation[is.na(adult.train$occupation)] = occupation[[1]] -->
-<!-- adult.train.norm$occupation[is.na(adult.train.norm$occupation)] = occupation[[1]] -->
-<!-- adult.test$occupation[is.na(adult.test$occupation)] = occupation[[2]] -->
-<!-- adult.test.norm$occupation[is.na(adult.test.norm$occupation)] = occupation[[2]] -->
-
-<!-- country = predice_na(attr = "country", noselectvars = c("occupation", "workclass")) -->
-<!-- adult.train$country[is.na(adult.train$country)] = country[[1]] -->
-<!-- adult.train.norm$country[is.na(adult.train.norm$country)] = country[[1]] -->
-<!-- adult.test$country[is.na(adult.test$country)] = country[[2]] -->
-<!-- adult.test.norm$country[is.na(adult.test.norm$country)] = country[[2]] -->
+<!-- country.nnet = nnet(formula = country ~ ., maxit=100,  -->
+<!--         data = subset(adult.train.clean.norm, select=c(-workclass, -occupation)), -->
+<!--         size = 8, decay=1, trace=F) -->
+<!-- pred_country = predict(object = country.nnet,  -->
+<!--             newdata = subset(adult.train.norm[is.na(adult.train$country),],  -->
+<!--             select=c(-workclass, -occupation)), type="class") -->
+<!-- pred_test_country = predict(object = country.nnet,  -->
+<!--             newdata = subset(adult.test.norm[is.na(adult.test$country),],  -->
+<!--             select=c(-workclass, -occupation)), type="class") -->
+<!-- adult.train$country[is.na(adult.train$country)] = pred_country -->
+<!-- adult.train.norm$country[is.na(adult.train.norm$country)] = pred_country -->
+<!-- adult.test$country[is.na(adult.test$country)] = pred_test_country -->
+<!-- adult.test.norm$country[is.na(adult.test.norm$country)] = pred_test_country -->
 <!-- ``` -->
+
+```{r}
+set.seed(1)
+# normalizamos todos los datos de la clase
+norm = normalizar_maxmin(data = adult.train, data_test = adult.test)
+adult.train.norm = norm[[1]]
+adult.test.norm = norm[[2]]
+norm = NULL
+
+# debemos quitar las variables con NA para poder predecir correctamente
+predice_na <- function(attr, noselectvars, formula, test_dataset = adult.test.norm,
+                       train_dataset = adult.train.norm, dataset = adult.train.clean.norm) {
+    # el vector no selectvars siempre tendrá dos variables string
+    model <- nnet(formula = formula, maxit = 100,
+                  data = subset(dataset, select=c(-which(colnames(dataset) == noselectvars[1]),
+                                                  -which(colnames(dataset) == noselectvars[2]))),
+                  size = 8, decay = 1, trace = T)
+    pred_train <- predict(object = model, newdata = subset(train_dataset[is.na(train_dataset[,attr]),],
+                         select=c(-which(colnames(train_dataset) == noselectvars[1]),
+                                  -which(colnames(train_dataset) == noselectvars[2]))), type = "class")
+    print(pred_train)
+    pred_test <- predict(object = model, newdata = subset(test_dataset[is.na(test_dataset[,attr]),],
+                         select=-which(colnames(test_dataset) == noselectvars)), type = "class")
+    list(pred_train, pred_test)
+}
+
+workclass = predice_na(attr = "workclass", noselectvars = c("country", "occupation"), 
+                       formula = workclass ~ .)
+adult.train$workclass[is.na(adult.train$workclass)] = workclass[[1]]
+adult.train.norm$workclass[is.na(adult.train.norm$workclass)] = workclass[[1]]
+adult.test$workclass[is.na(adult.test$workclass)] = workclass[[2]]
+adult.test.norm$workclass[is.na(adult.test.norm$workclass)] = workclass[[2]]
+
+occupation = predice_na(attr = "occupation", noselectvars = c("country", "workclass"),
+                        formula = occupation ~ .)
+adult.train$occupation[is.na(adult.train$occupation)] = occupation[[1]]
+adult.train.norm$occupation[is.na(adult.train.norm$occupation)] = occupation[[1]]
+adult.test$occupation[is.na(adult.test$occupation)] = occupation[[2]]
+adult.test.norm$occupation[is.na(adult.test.norm$occupation)] = occupation[[2]]
+
+country = predice_na(attr = "country", noselectvars = c("occupation", "workclass"),
+                     formula = country ~ .) 
+adult.train$country[is.na(adult.train$country)] = country[[1]]
+adult.train.norm$country[is.na(adult.train.norm$country)] = country[[1]]
+adult.test$country[is.na(adult.test$country)] = country[[2]]
+adult.test.norm$country[is.na(adult.test.norm$country)] = country[[2]]
+```
 
 Una vez hecho esto, vemos que ya no tenemos ningún valor perdido en los datos: 
 
