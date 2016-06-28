@@ -688,17 +688,18 @@ adult.train.norm = norm[[1]]
 adult.test.norm = norm[[2]]
 norm = NULL
 
-predice_na <- function(attr, noselectvars, test_dataset = adult.test.norm, dataset = adult.train.norm) {
+predice_na <- function(attr, noselectvars, test_dataset = adult.test.norm, 
+                       train_dataset = adult.train.norm, dataset = adult.train.clean.norm) {
     # el vector no selectvars siempre tendrá dos variables string
-    model <- nnet(x = subset(dataset, select=c(-which(dataset) == noselectvars[1], 
-                -which(dataset) == noselectvars[2])), y = dataset[,attr],
+    model <- nnet(x = subset(dataset, select=c(-which(colnames(dataset)==noselectvars[1]), 
+                -which(colnames(dataset)==noselectvars[2]))), y = dataset[,attr],
                 maxit = 100, size = 8, decay = 1, trace = F)
-    pred_train <- predict(object = model, newdata = subset(dataset[is.na(dataset[,attr]),],
-                        select=c(-which(dataset) == noselectvars[1], 
-                        -which(dataset) == noselectvars[2])), type = "class")
+    pred_train <- predict(object = model, newdata = subset(train_dataset[is.na(train_dataset[,attr]),],
+                        select=c(-which(colnames(dataset)==noselectvars[1]), 
+                    -which(colnames(dataset)==noselectvars[2]))), type = "class")
     pred_test <- predict(object = model, newdata = subset(test_dataset[is.na(test_dataset[,attr]),],
-                        select=c(-which(dataset) == noselectvars[1], 
-                        -which(dataset) == noselectvars[2])), type = "class")
+                        select=c(-which(colnames(dataset)==noselectvars[1]), 
+                    -which(colnames(dataset)==noselectvars[2]))), type = "class")
     list(pred_train, pred_test)
 }
 
