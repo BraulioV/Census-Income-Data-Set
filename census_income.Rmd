@@ -23,7 +23,6 @@ knitr::opts_chunk$set(
 	cache = TRUE
 )
 ```
-\renewcommand{\tablename}{Tabla} 
 
 # Definición del problema a resolver y enfoque elegido
 
@@ -31,7 +30,7 @@ knitr::opts_chunk$set(
 
 La base de datos escogida se denomina _Census Income_, aunque también es conocida como _Adult_ [@Lichman:2013]. Se puede descargar [aquí](http://archive.ics.uci.edu/ml/datasets/Census+Income "aqui"). Esta base de datos tiene 48842 instancias, cada una con 14 atributos. El problema es que también tiene valores perdidos.
 
-El problema consiste en predecir cuando una persona va a gastarse más de $50K basándonos en los datos del censo. Por tanto, estamos ante un problema de _clasificación_.
+El problema consiste en predecir cuando una persona ingresa más de 50.000 dólares al año, basándonos en los datos del censo. Por tanto, estamos ante un problema de _clasificación binaria_.
 
 Los atributos de los que disponemos son:
 
@@ -61,7 +60,7 @@ Los atributos de los que disponemos son:
 
 * ___education-num___: variable númerica que representa a la anterior.
 
-* ___marital-status___: variable categórica que expresa el estado sentimental de la persona. Los valores que puede tomar son: 
+* ___marital-status___: variable categórica que expresa el estado civil de la persona. Los valores que puede tomar son: 
 
     * _Married-civ-spouse_: la persona está casada con un civil.
     
@@ -97,13 +96,13 @@ Los atributos de los que disponemos son:
 
 ## Enfoque elegido
 
-El enfoque que usaremos para predecir la variable *income* es realizar tres modelos diferentes, cada uno con sus ventajas y desventajas, siendo uno un modelo ___paramétrico___, un modelo ___de base radial___ y un modelo basado en una ___red neuronal multicapa___. En el caso del modelo parámetrico, usaremos un modelo __Random Forest__, ya que obtiene un modelo que se ajusta muy bien a los datos, y además, `R` proporciona mecanismos para poder ajustar los parámetros óptimos y así no tener sobreajuste.
+El enfoque que usaremos para predecir la variable *income* es realizar tres modelos diferentes, cada uno con sus ventajas y desventajas, siendo uno un modelo ___paramétrico___, un modelo ___de base radial___ y un modelo basado en una ___red neuronal multicapa___. En el caso del modelo parámetrico, usaremos un modelo __Random Forest__, ya que obtiene un modelo que se ajusta muy bien a los datos, y además, `R` proporciona mecanismos para poder ajustar los parámetros óptimos y así reducir la posiblidad de sobreajustar los datos.
 
 # Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
 ## Valores perdidos
 
-Respecto a los valores perdidos, podríamos tomar tres enfoques diferentes: sustituirlos por una media, eliminar todas las filas que contengan algún valor perdido o no usar las variables que contengan valores perdidos. Para tomar esta decisión, primero hemos de estudiar el porcentaje de valores perdidos que presentan los datos.
+Respecto a los valores perdidos, podríamos tomar tres enfoques diferentes: sustituirlos por la media del resto de valores para ese dato predictor o predecirlo con un modelo, eliminar todas las filas que contengan algún valor perdido o no usar las variables que contengan valores perdidos. Para tomar esta decisión, primero hemos de estudiar el porcentaje de valores perdidos que presentan los datos y dónde se pierden estos datos.
 
 Para ello, en primer lugar leemos los datos. 
 
@@ -405,7 +404,7 @@ svmModelReg_25 = svm(income ~ ., data = adult.train.clean, kernel = "radial", co
 outOfSampleError(svmModelReg_25)
 ```
 
-Como podemos ver, los resultados cambian dependiendo del valor de $\lambda$ que tome el modelo. Frente al valor de $\lambda$ del primer modelo $SVM$, que era 1, el resto de modelos empeoran al cambiar el valor de la regularización, pasando de una gran deterioro del modelo en valores pequeños de $\lambda$ ($0,001$ y $0,01$) a un deterioro más pequeño con $\lambda = 0,1$. En todos estos casos, estábamos sobreaustando el modelo. Sin embargo, con $\lambda = 0,9$ el modelo es capaz de mejorar un poco al primer modelo y un con un $\lambda$ mayor, obtenemos resultados parecidos pero peores, por tanto, podemos decir que estamos subajustando el modelo levemente.
+Como podemos ver, los resultados cambian dependiendo del valor de $\lambda$ que tome el modelo. Frente al valor de $\lambda$ del primer modelo $SVM$, que era 1, el resto de modelos empeoran al cambiar el valor de la regularización, pasando de una gran deterioro del modelo en valores pequeños de $\lambda$ ($0,001$ y $0,01$) a un deterioro más pequeño con $\lambda = 0,1$. En todos estos casos, estábamos sobreaustando el modelo. Sin embargo, con $\lambda = 0,9$ el modelo es capaz de mejorar un poco al primer modelo y un con un $\lambda$ mayor, podíamos llegar a subajustar el modelo.
 
 ```{r}
 cat("Error obtenido en la clase <=50K: ", 
@@ -413,8 +412,6 @@ cat("Error obtenido en la clase <=50K: ",
 cat("Error obtenido en la clase >50K: ", 
     151300/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
 ```
-
-Como vemos, el error en la clase `>50K` se ha reducido muchísimo con este modelo. Y el error obtenido en la `<=50K` ha subido pero se encuentra dentro de un límite aceptable. Por tanto, podemos concluir que SVM ha conseguido equilibrar ambas clases, aunque también serían necesarias varias operaciones sobre los datos para conseguir que estén equilibrados y reducir el error.
 
 ## Vecino más cercano con base radial
 
@@ -551,29 +548,25 @@ A pesar de disponer de una única capa oculta, el modelo ha sido capaz de obtene
 
 ```{r}
 cat("Error obtenido en la clase <=50K: ", 
-    97200/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
+    94700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
 cat("Error obtenido en la clase >50K: ", 
-    139100/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
+    154100/length(adult.test.clean$income[adult.test.clean$income==">50K"]))
 ```
 
-Por tanto, la conclusión obtenida sobre éste modelo es, que a pesar de haber estado limitado por la implementación del paquete de `R`, hemos obtenido un resultado muy competitivos y de una alta calidad, tanto en cuanto a error fuera de la muestra como error en cada clase y equilibrio en clases desbalanceadas, ya que éste modelo ha conseguido disminuir el error de la clase `>50K` por debajo del 40% sin aumentar de forma considerada el error en la clase `<=50K`.
+Por tanto, la conclusión obtenida sobre éste modelo es, que a pesar de haber estado limitado por la implementación del paquete de `R`, hemos obtenido un resultado muy competitivos y de una alta calidad, tanto en cuanto a error fuera de la muestra como error en cada clase y equilibrio en clases desbalanceadas.
 
 # Comparación de los modelos obtenidos
 
 Para concluir con los resultados obtenidos, vamos a hacer un estudio comparativo de todos los modelos que hemos ajustado en este proyecto. Para ello, vamos a representar la curva ROC de cada uno y realizar una tabla comparativa.
 
-## Tabla comparativa de resultados
 
 |                   | Regresión logística | Random forest | Support Vector Machine | Vecino más cercano | Red Neuronal |
 |:-----------------:|:-------------------:|:-------------:|:----------------------:|:------------------:|:------------:|
 |     $E_{out}$     | 24,56%              | 18,1%         |  14,78%                |  16,52%            | 15,69%       |
-|  $E_{out >50K}$   | 100%                | $72,95$%      |  40,9%                 |  41,65%            | 37,59%       |
-| $E_{out <=50K}$   | 0%                  | $0.24$%       |  6,29%                 |  8,34%             | 8,56%        |
-
-Table: Comparativa de los resultados de los modelos ajustados
+|  $E_{out}^{>50K}$ | 100%                | $72,95$%      |  
+| $E_{out}^{<=50K}$ | 0%                  | $0.24$%
 
 
-En la Tabla 1 vemos una comparativa de los modelos obtenidos. 
 
 ```{r}
 library(ROCR)
