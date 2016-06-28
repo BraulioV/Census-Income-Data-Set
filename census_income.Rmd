@@ -806,8 +806,6 @@ cat("Error obtenido en la clase >50K: ",
     143800/length(adult.test$income[adult.test$income==">50K"]))
 ```
 
-En ambas hemos reducido el error en un 1%. 
-
-La mejora conseguida puede no parecer muy significativa, pero, teniendo en cuenta que los valores perdidos representaban únicamente un 7% de los datos tampoco se podría esperar una gran mejora.
+En ambas hemos reducido el error en un 1% y se puede comprobar como el error del modelo se reduce al tener más instancias para poder entrenar el modelo y a la vez, el tener más instancias para datos de test nos da una mejor representación del error real que tenemos fuera de la muestra. Aun así, tras haber recuperado los datos perdidos, no existe una mejora sustancial en el modelo, ya que los datos que eliminamos para aprender el modelo inicial sólo suponían un 7.37% del total de los datos que disponíamos, pero aun así, se puede notar cómo el modelo se comporta mejor que antes.
 
 # Referencias
