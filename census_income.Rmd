@@ -669,6 +669,10 @@ Respecto a la hora de elegir entre estos dos modelos, podemos elegir el modelo m
 
 Por todo esto, el mejor modelo elegido es \textbf{el modelo de \textit{Red Neuronal}}.
 
+\newpage
+
 # Ajustando un modelo de red neuronal recuperando los datos perdidos
+
+La idea de esto es recuperar todas las instancias de datos que hemos eliminado al contener valores perdidos. La forma de recuperar estos datos va a consistir en tratar de predecir esos datos con un modelo, y una vez predichos, ver cómo se comporta el nuevo modelo con todo el conjunto de datos al completo frente al que teníamos sin los datos perdidos. 
 
 # Referencias
