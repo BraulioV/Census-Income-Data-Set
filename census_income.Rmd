@@ -321,11 +321,9 @@ outOfSampleError <- function(model, newdata = adult.test.clean,  printTable = T,
 }
 set.seed(1)
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
-print("Matriz de confusión datos de train")
-print(rf.clean$confusion)
 ```
 
-Con $m = 3$ obtenemos un modelo con un $18,18$% de error _Out-Of-Bag_. Al ajustar el modelo de Random Forest, cada uno de los árboles usa un subconjunto de los datos, y los no usados para calcular dicho árbol se quedan como _Out Of Bag_. Una vez generados los árboles, se predice el valor de cada dato usando los árboles en los que dicho dato ha sido _Out Of Bag_. En el caso de clasificación se hace mediante voto mayoritario. El error de clasificación obtenido para cada dato es válido, porque para predecir el dato se han usado árboles en los que el dato en cuestión no "ha participado" [@islroob].
+Con $m = 3$ obtenemos un modelo con un $18,18$% de error _Out Of Bag_. Al ajustar el modelo de Random Forest, cada uno de los árboles usa un subconjunto de los datos, y los no usados para calcular dicho árbol se quedan como _Out Of Bag_. Una vez generados los árboles, se predice el valor de cada dato usando los árboles en los que dicho dato ha sido _Out Of Bag_. En el caso de clasificación se hace mediante voto mayoritario. El error de clasificación obtenido para cada dato es válido, porque para predecir el dato se han usado árboles en los que el dato en cuestión no "ha participado" [@islroob].
 
 Respecto a la matriz de confusión generada, vemos que hay muchos más aciertos para la clase `<=50K` que para la clase `>50K` y que la tasa de error en la primera clase es mucho menor que la de la segunda, $0,002$ frente a $0,72$. Esto puede deberse a que el número de instancias para el la clase `<=50K` sea mucho mayor y, por tanto, el modelo tienda a clasificar los datos como `<=50K`:
 
@@ -342,8 +340,6 @@ Ahora bien, ¿podemos llegar a obtener un error más bajo cambiando éste parám
 set.seed(1)
 rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), 
       y=adult.train.clean$income, doBest=T)
-print("Matriz de confusión datos de train")
-print(rf.tuned$confusion)
 ```
 
 Como vemos en la gráfica, con $m=2$ obtenemos el modelo óptimo con menor error, por tanto, en vez de quedarnos con el modelo generado anteriormente con $m=3$, nos quedamos con el mejor obtenido según el error _Out-Of-Bag_, junto con la matriz de confusión para los datos de train, donde vemos que el error para la clase `>50K` es del 72%.
@@ -399,6 +395,10 @@ Los parámetros a ajustar del modelo son:
 ### Hiperparámetros del modelo
 
 En este caso, como hiperparámetro del modelo tenemos el parámetro $\lambda$ o *cost*, que controla la regularización del problema. Esta regularización de los datos, se realiza haciendo uso de la formulación de Lagrange.
+
+### Complejidad del modelo
+
+La complejidad de los modelos $SVM$ varía en función del $Kernel$ escogido para la función. En el caso de los modelos de base radial, como es el caso, esta dimensión $d_{VC}$, ya que si nuestro espacio de búsqueda se establece en $\mathbf{R}^d$, dado un punto $x_1$, podemos coger un punto $x_2 \in R^d$ y medir la distancia entre estos dos puntos para ver lo que aporta el modelo. Como esta distancia puede ser infinita, $d_{VC} = \infty$.
 
 ### Ajuste del SVM al problema
 
@@ -532,7 +532,8 @@ cat("Eout = ",mean((model_knn$fitted.values != adult.test.clean$income)*1))
 El error de test obtenido ha sido del 16%, al igual que el error de validación cruzada. En este caso el modelo ha conseguido corregir las clases desbalanceadas que había, equilibrando el error obtenido en una y en otra:
 
 ```{r}
-plot(model_knn$fitted.values, col = c(4,2), main = "Nº de datos predichos para cada clase por KNN")
+plot(model_knn$fitted.values, col = c(3,2), 
+     main = "Nº de datos predichos para cada clase por KNN")
 cat("Error obtenido en la clase <=50K: ", 
     94700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
 cat("Error obtenido en la clase >50K: ", 
