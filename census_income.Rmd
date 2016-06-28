@@ -568,12 +568,14 @@ Para concluir con los resultados obtenidos, vamos a hacer un estudio comparativo
 |:-----------------:|:-------------------:|:-------------:|:----------------------:|:------------------:|:------------:|
 |     $E_{out}$     | 24,56%              | 18,1%         |  14,78%                |  16,52%            | 15,69%       |
 |  $E_{out >50K}$   | 100%                | $72,95$%      |  40,9%                 |  41,65%            | 37,59%       |
-| $E_{out <=50K}$   | 0%                  | $0.24$%       |  6,29%                 |  8,34%             | 8,56%        |
+| $E_{out <=50K}$   | 0%                  | $0,24$%       |  6,29%                 |  8,34%             | 8,56%        |
 
 Table: Comparativa de los resultados de los modelos ajustados
 
 
-En la Tabla 1 vemos una comparativa de los modelos obtenidos. 
+En la Tabla 1 vemos una comparativa de los modelos obtenidos. El modelo con menor $E_{out}$ ha sido _Support Vector Machine_ con un kernel radial. Éste modelo también ha conseguido clasificar ejemplos de la clase minoritaria, `>50K`, con menos del 50% de error, aunque ha sido superado por la _Red Neuronal_, que lo ha conseguido con un error menor al 40%. Ahora bien, el modelo _Red Neuronal_ ha jugado con desventaja, al no poder ajustar uno de los parámetros que más flexibilidad da al modelo: el númerod de capas ocultas. A pesar de esta desventaja, ha logrado ser el segundo mejor modelo.
+
+El peor modelo ha sido la _Regresión logística_, ya que ha obviado la clase minoritaria completamente.
 
 ```{r}
 library(ROCR)
