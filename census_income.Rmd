@@ -688,7 +688,7 @@ norm = normalizar_maxmin(data = adult.train.occupation.lost,
 adult.train.occupation.lost.norm = norm[[1]]
 adult.test.occupation.lost.norm = norm[[2]]
 
-outOfSampleErrorOccupation <- function(newdata = adult.test.clean.norm,  
+outOfSampleErrorOccupation <- function(model, newdata = adult.test.clean.norm,  
     printTable = T, type = "class"){
   set.seed(1)
   ypred = predict(object = model, newdata = newdata, type=type)
@@ -701,8 +701,8 @@ outOfSampleErrorOccupation <- function(newdata = adult.test.clean.norm,
 ```{r}
 set.seed(1)
 model.nnet.occupation = nnet(formula = occupation ~ ., maxit=10000, 
-    data = adult.train.clean.norm, size = 8, decay=0.1,trace=F)
-outOfSampleError(model.nnet.occupation, adult.test.clean.norm, type="class")
+    data = adult.train.clean.norm, size = 8, decay=0.5,trace=T)
+outOfSampleErrorOccupation(model.nnet.occupation, adult.test.clean.norm, type="class")
 ```
 
 # Referencias
