@@ -718,6 +718,7 @@ set.seed(1)
 model.nnet.occupation = nnet(formula = occupation ~ ., maxit=10000, 
     data = adult.train.clean.norm, size = 8, decay=0.5,trace=T)
 outOfSampleErrorOccupation(model.nnet.occupation, adult.test.clean.norm, type="class")
+y = predict(model.nnet.occupation, newdata = adult.train.occupation.lost.norm, type = "class", )
 ```
 
 # Referencias
