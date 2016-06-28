@@ -430,6 +430,7 @@ outOfSampleError(svmModelReg_01)
 set.seed(1)
 svmModelReg_09 = svm(income ~ ., data = adult.train.clean, kernel = "radial", cost = 0.9)
 outOfSampleError(svmModelReg_09)
+set.seed(1)
 svmModelReg_25 = svm(income ~ ., data = adult.train.clean, kernel = "radial", cost = 2.5)
 outOfSampleError(svmModelReg_25)
 ```
@@ -682,6 +683,35 @@ workclass.nnet = nnet(formula = workclass ~ ., maxit=10000,
     data = adult.train.clean.norm, size = 10, decay=0.1,trace=F)
 pred_workclass = predict(object = workclass.nnet, newdata = adult.train[is.na(adult.train$workclass),], type="class")
 adult.train$workclass[is.na(adult.train$workclass)] = pred_workclass
+```
+
+## Modelo para recuperar las variables de *occupation*
+
+Para recuperar los datos de esta variable, crearemos un nuevo dataset que llamaremos *adult.train.occupation.lost*, donde almacenaremos las instancias en el conjunto de train que tienen datos perdidos en la variable *occupation*. 
+
+```{r}
+adult.train.occupation.lost = adult.train[is.na(adult.train$occupation) == T,]
+adult.test.occupation.lost = adult.test[is.na(adult.test$income) == T,]
+norm = normalizar_maxmin(data = adult.train.occupation.lost,  
+  data_test = adult.test.occupation.lost)
+adult.train.occupation.lost.norm = norm[[1]]
+adult.test.occupation.lost.norm = norm[[2]]
+
+outOfSampleErrorOccupation <- function(newdata = adult.test.clean.norm,  
+    printTable = T, type = "class"){
+  set.seed(1)
+  ypred = predict(object = model, newdata = newdata, type=type)
+  if(printTable)
+    print(table(predict=ypred, truth=newdata$occupation))
+  cat("Eout = ",mean((ypred != newdata$occupation)*1))
+}
+```
+
+```{r}
+set.seed(1)
+model.nnet.occupation = nnet(formula = occupation ~ ., maxit=10000, 
+    data = adult.train.clean.norm, size = 8, decay=0.1,trace=F)
+outOfSampleError(model.nnet.occupation, adult.test.clean.norm, type="class")
 ```
 
 # Referencias
