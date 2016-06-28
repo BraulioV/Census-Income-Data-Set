@@ -563,10 +563,21 @@ Para concluir con los resultados obtenidos, vamos a hacer un estudio comparativo
 |                   | Regresión logística | Random forest | Support Vector Machine | Vecino más cercano | Red Neuronal |
 |:-----------------:|:-------------------:|:-------------:|:----------------------:|:------------------:|:------------:|
 |     $E_{out}$     | 24,56%              | 18,1%         |  14,78%                |  16,52%            | 15,69%       |
-|  $E_{out}^{>50K}$ | 100%                | $72,95$%      |  
-| $E_{out}^{<=50K}$ | 0%                  | $0.24$%
+|  $E_{out >50K}$   | 100%                | $72,95$%      |  40,9%                 |  41,65%            | 37,59%       |
+| $E_{out <=50K}$   | 0%                  | $0,24$%       |  6,29%                 |  8,34%             | 8,56%        |
+
+Table: Comparativa de los resultados de los modelos ajustados
 
 
+En la Tabla 1 vemos una comparativa de los modelos obtenidos. El modelo con menor $E_{out}$ ha sido _Support Vector Machine_ utilizando un $Kernel$ de base radial. Es el modelo con menor tasa de error en la clase minoritaria, ya que a diferencia de otros modelos, no ha "obviado" la clase minoritaria, aunque ha sido superado por la _Red Neuronal_, que lo ha conseguido con un error menor al 40%. Este modelo ha conseguido balancear mejor el error entre ambas clases, con lo que puede generalizar un poco mejor que el modelo $SVM$, con el coste de aumentar un poco el error fuera de la muestra. Ahora bien, el modelo _Red Neuronal_ ha jugado con desventaja, al no poder ajustar uno de los parámetros que más flexibilidad da al modelo: el número de capas ocultas, pero esto se debe a una limitación de la función del lenguaje. A pesar de esta desventaja, ha logrado ser el segundo mejor modelo.
+
+El peor modelo ha sido la _Regresión logística_, ya que ha obviado la clase minoritaria completamente. Éste modelo ha obtenido un 24% de error, ya que ha clasificado de forma correcta todos los ejemplos de la clase `<=50K` y sólo ha fallado en los de la clase `>50K`. Al obviar la clase minoritaria, el error fuera de la muestra no se ve demasiado afectado, pero, puede darse que esta clase minoritaria, fuera de nuestro conjunto de train y test tenga una representación mucho mayor y deje de ser minoritaria, con lo que el modelo estaría fallando enormemente. El modelo _Random Forest_ también ha hecho una clasificación bastante mala, ya que el error obtenido en la clase `>50K` ha sido demasiado alto. Por tanto, al no haber podido trabajar correctamente con datos desbalanceados estos dos modelos han obtenidos los peores resultados.
+
+Por último, el modelo del _Vecino más cercano_ con base radial ha obtenido buenos resultados, pero en comparación con _Support Vector Machine_ o _Red Neuronal_ ha obtenido un error mayor fuera de la muestra, debido a un mayor error en la clase minoritaria. Ha obtenido un error menor en `<=50K` que _Red Neuronal_, 8,34 frente a 8,65, pero esta diferencia no es significativa.
+
+## Curvas ROC de los modelos obtenidos
+
+A continuación, podemos ver las curvas $ROC$ asociadas a cada uno de los modelos estudiados:
 
 ```{r}
 library(ROCR)
@@ -604,5 +615,14 @@ legend("bottomright",col=c(2:6),lwd=2,legend=c("Regresión logística",
             "Random Forest","SVM","KNN","Red Neuronal"),bty='n')
 ```
 
+Como podemos ver, las curvas que más destacan, a pesar de estar todas muy igualadas, son las curvas del modelo $SVM$ y de la red neuronal frente al resto, lo que nos indica, que el ratio de aciertos es mayor en estos que en el resto de modelos.
+
+Respecto a la curva del modelo de regresión logística, la tasa de aciertos de este modelo es "bastante alta" ya que el modelo, al obviar la clase minoritaria, ha conseguido acertar la clase mayoritaria. Al ser clase mayoritaria, la tasa de aciertos es muy alta frente a los otros modelos, aunque esto es "virtual".
+
+# Selección del mejor modelo
+
+En base a los resultados, y el análisis de los errores que obtiene cada modelo, junto con el estudio de la curva ROC para cada modelo, podemos elegir como mejores modelos al modelo $SVM$ y el modelo de \textit{Red Neuronal}, ya que son los que mejores resultados ofrecen.
+
+Respecto a la hora de elegir entre estos dos modelos, podemos elegir el modelo más sencillo, ya que, si seguimos el criterio de la \textit{Navaja de Ockham}, si tenemos dos modelos que se comportan de forma similar, se debe elegir el modelo más "simple". Otro aspecto a tomar en cuenta en la elección del modelo es la facilidad para poder explicar lo que hace este modelo para predecir los datos, y por ello en este aspecto gana el modelo $SVM$.
 
 # Referencias
