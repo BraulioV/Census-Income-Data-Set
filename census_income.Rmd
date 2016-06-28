@@ -749,11 +749,10 @@ predice_na <- function(attr, noselectvars, formula, test_dataset = adult.test.no
     model <- nnet(formula = formula, maxit = 100,
                   data = subset(dataset, select=c(-which(colnames(dataset) == noselectvars[1]),
                                                   -which(colnames(dataset) == noselectvars[2]))),
-                  size = 8, decay = 1, trace = T)
+                  size = 8, decay = 1, trace = F)
     pred_train <- predict(object = model, newdata = subset(train_dataset[is.na(train_dataset[,attr]),],
                          select=c(-which(colnames(train_dataset) == noselectvars[1]),
                                   -which(colnames(train_dataset) == noselectvars[2]))), type = "class")
-    print(pred_train)
     pred_test <- predict(object = model, newdata = subset(test_dataset[is.na(test_dataset[,attr]),],
                          select=-which(colnames(test_dataset) == noselectvars)), type = "class")
     list(pred_train, pred_test)
