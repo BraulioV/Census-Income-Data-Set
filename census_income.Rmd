@@ -220,6 +220,7 @@ adult.test.clean[,"education.num"] = NULL
 
 # Ajustando un modelo lineal
 
+## Idoneidad del modelo lineal
 Antes de pasar a modelos más complejos, vamos a comprobar cómo se comporta un modelo lineal. Esto es así, ya que la complejidad de un modelo lineal es bastante menor que a la de los otros modelos que se usarán a continuación, y si es capaz de ajustar bastante mejor los datos que el resto de modelos, se escogería este.
 
 Para ello, nos vamos a basar en un modelo que utiliza la regresión logística para este problema. Este modelo, nos devuelve la probabilidad de pertenecer a una clase u otra. Usando el concepto de \textit{maximum likelihood} o máxima probabilidad, asigna a los datos la clase a la que es más probable que pertenezca, de acuerdo a la probabilidad que calcula el modelo. 
@@ -228,6 +229,12 @@ Estas probabilidades se obtienen a partir de la siguiente expresión:
 $$ P(y|x) = \theta(yw^Tx)$$
 donde $\theta$ es la función logística, $y$ es la etiqueta del modelo, $w$ es nuestro vector de pesos asociado, y $x$ los datos predictores. Esta función es la que usaremos para crear un modelo de estimación del error, y trataremos de minimizar ese error, que lo calcularemos de la siguiente forma [@lfd]:
 $$E_{in} = \frac{1}{N}\sum_{n=1}^N\ln\left(\frac{1}{\theta(y_nw^Tx_n)} \right) = \frac{1}{N}\sum_{n=1}^N\ln\left(1 + e^{-y_nw^Tx_n}\right)$$
+
+## Dimensión del modelo lineal
+
+La dimensión del modelo lineal la mediremos en función de la dimensión de **Vapnik–Chervonenkis** o dimensión *VC*, denotada como $d_{VC}$ que expresa la complejidad del modelo, y el máximo valor de $N$, donde $N$ es el número de datos disponibles, que el modelo puede separar. En el caso de los modelos lineales, como es el caso, $d_{VC} = d + 1$, donde $d$ es el número de variables predictoras que tenemos.
+
+Con esto vemos, que la dimensión $d_{VC}$ es basntante competitiva y puede comportarse bien en el problema.
 
 ```{r}
 predictorGLM <- function(model, pintar = T){
@@ -277,6 +284,16 @@ El porqué de usar *Random Forest* frente a un modelo *Bagging* es que con este 
 
 Respecto a los datos que tenemos (30162 datos de entrenamiento y 15060 datos de test)\footnote{Eliminando las instancias con valores perdidos.} tenemos suficientes datos como para que *Random Forest* trabaje de forma adecuada, y disponemos de 14 datos predictores, ya que la variable `income` es aquella que queremos predecir.
 
+## Parámetros del modelo
+
+## Hiperparámetros del modelo
+
+## Complejidad del modelo
+
+La dimensión $d_{VC}$ para un modelo de árbol, es infinita, ya que para un conjunto de datos, podemos añadir al árbol tantas variables como queramos para clasificar de forma correcta todos los datos, y si tenemos infinitos datos, podemos añadir infinitas  variables al árbol para separar hasta el último punto del espacio, con lo que $d_{VC} = \infty$. 
+
+Si esto lo aplicamos a *Random Forest* tenemos que la dimensión $d_{VC} = \infty$ para este modelo también, al estar construido sobre árboles.
+
 ## Aplicación del modelo *Random Forest*
 
 Para ajustar un modelo *Random Forest*, haremos uso del paquete *randomForest* de *R*. 
@@ -295,10 +312,10 @@ outOfSampleError <- function(model, newdata = adult.test.clean,  printTable = T,
 }
 set.seed(1)
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
-print(rf.clean)
+print(rf.clean$confusion)
 ```
 
-Con $m = 3$ obtenemos un modelo con un $18,18$% de error _Out-Of-Bag_. Al ajustar el modelo de Random Forest, cada uno de los árboles usa un subconjunto de los datos, y los no usados para calcular dicho árbol se quedan como _out of bag_. Una vez generados los árboles, se predice el valor de cada dato usando los árboles en los que dicho dato ha sido _out of bag_. En el caso de clasificación se hace mediante voto mayoritario. El error de clasificación obtenido para cada dato es válido, porque para predecir el dato se han usado árboles en los que el dato en cuestión no "ha participado" [@islroob].
+Con $m = 3$ obtenemos un modelo con un $18,18$% de error _Out-Of-Bag_. Al ajustar el modelo de Random Forest, cada uno de los árboles usa un subconjunto de los datos, y los no usados para calcular dicho árbol se quedan como _Out Of Bag_. Una vez generados los árboles, se predice el valor de cada dato usando los árboles en los que dicho dato ha sido _Out Of Bag_. En el caso de clasificación se hace mediante voto mayoritario. El error de clasificación obtenido para cada dato es válido, porque para predecir el dato se han usado árboles en los que el dato en cuestión no "ha participado" [@islroob].
 
 Respecto a la matriz de confusión generada, vemos que hay muchos más aciertos para la clase `<=50K` que para la clase `>50K` y que la tasa de error en la primera clase es mucho menor que la de la segunda, $0,002$ frente a $0,72$. Esto puede deberse a que el número de instancias para el la clase `<=50K` sea mucho mayor y, por tanto, el modelo tienda a clasificar los datos como `<=50K`:
 
@@ -315,14 +332,16 @@ Ahora bien, ¿podemos llegar a obtener un error más bajo cambiando éste parám
 set.seed(1)
 rf.tuned = tuneRF(x=subset(adult.train.clean, select=-income), 
       y=adult.train.clean$income, doBest=T)
+print(rf.tuned$confusion)
 ```
 
-Como vemos en la gráfica, con $m=2$ obtenemos el modelo óptimo con menor error, por tanto, en vez de quedarnos con el modelo generado anteriormente con $m=3$, nos quedamos con el mejor obtenido según el error _Out-Of-Bag_.
+Como vemos en la gráfica, con $m=2$ obtenemos el modelo óptimo con menor error, por tanto, en vez de quedarnos con el modelo generado anteriormente con $m=3$, nos quedamos con el mejor obtenido según el error _Out-Of-Bag_, junto con la matriz de confusión para los datos de train, donde vemos que el error para la clase `>50K` es del 72%.
 
 Lo último que podemos preguntarnos es, ¿cómo se comporta el modelo con los datos de test? Para saberlo, generamos la tabla de confusión:
 
 ```{r}
 outOfSampleError(rf.tuned)
+plot(rf.clean$predicted, col = c(3,2))
 cat("Error obtenido en la clase <=50K: ", 
     2700/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
 cat("Error obtenido en la clase >50K: ", 
@@ -404,9 +423,10 @@ svmModelReg_25 = svm(income ~ ., data = adult.train.clean, kernel = "radial", co
 outOfSampleError(svmModelReg_25)
 ```
 
-Como podemos ver, los resultados cambian dependiendo del valor de $\lambda$ que tome el modelo. Frente al valor de $\lambda$ del primer modelo $SVM$, que era 1, el resto de modelos empeoran al cambiar el valor de la regularización, pasando de una gran deterioro del modelo en valores pequeños de $\lambda$ ($0,001$ y $0,01$) a un deterioro más pequeño con $\lambda = 0,1$. En todos estos casos, estábamos sobreaustando el modelo. Sin embargo, con $\lambda = 0,9$ el modelo es capaz de mejorar un poco al primer modelo y un con un $\lambda$ mayor, podíamos llegar a subajustar el modelo.
+Como podemos ver, los resultados cambian dependiendo del valor de $\lambda$ que tome el modelo. Frente al valor de $\lambda$ del primer modelo $SVM$, que era 1, el resto de modelos empeoran al cambiar el valor de la regularización, pasando de una gran deterioro del modelo en valores pequeños de $\lambda$ ($0,001$ y $0,01$) a un deterioro más pequeño con $\lambda = 0,1$. En todos estos casos, estábamos sobreaustando el modelo. Sin embargo, con $\lambda = 0,9$ el modelo es capaz de mejorar un poco al primer modelo y un con un $\lambda$ mayor, podíamos llegar a subajustar el modelo. También podemos ver como si hacemos el valor de $\lambda$ mayor, el modelo no realiza mejoras significativas, y en este caso, incluso empeora un poco.
 
 ```{r}
+plot(svmModelReg_09$fitted, col = c(3,2))
 cat("Error obtenido en la clase <=50K: ", 
     71400/length(adult.test.clean$income[adult.test.clean$income=="<=50K"]))
 cat("Error obtenido en la clase >50K: ", 
@@ -473,11 +493,11 @@ norm = NULL
 
 Para elegir el $k$ a usar, vamos a entrenar el modelo con _Validación cruzada leave-one-out_. Como `kmax` vamos a poner el doble de la dimensión del dataset, para que la función tenga flexibilidad en cuanto al número de vecinos entre los que escoger. Como kernel, vamos a elegir entre uno gaussiano y otro inversamente proporcional a la distancia, ya que elegir entre alguno más incrementa muchísimo el tiempo de ejecución.
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(kknn)
 set.seed(1)
 best_model_knn <- train.kknn(formula = income ~ ., data = adult.train.clean.norm, 
-                        kmax = 2*ncol(adult.train), kernel = c("gaussian", "inversion"))
+  kmax = 2*ncol(adult.train), kernel = c("gaussian", "inversion"))
 best_model_knn
 ```
 
@@ -487,8 +507,9 @@ Una vez obtenidos los mejores parámetros, vamos a ajustar el modelo para obtene
 
 ```{r}
 set.seed(1)
-model_knn <- kknn(formula = income ~ ., train = adult.train.clean.norm, test = adult.test.clean.norm, 
-     k = best_model_knn$best.parameters$k, kernel = best_model_knn$best.parameters$kernel)
+model_knn <- kknn(formula = income ~ ., train = adult.train.clean.norm, 
+    test = adult.test.clean.norm, k = best_model_knn$best.parameters$k, 
+    kernel = best_model_knn$best.parameters$kernel)
 print(table(predict = model_knn$fitted.values, truth = adult.test.clean$income))
 cat("Eout = ",mean((model_knn$fitted.values != adult.test.clean$income)*1))
 ```
