@@ -398,7 +398,7 @@ En este caso, como hiperparámetro del modelo tenemos el parámetro $\lambda$ o 
 
 ### Complejidad del modelo
 
-La complejidad de los modelos $SVM$ varía en función del $Kernel$ escogido para la función. En el caso de los modelos de base radial, como es el caso, esta dimensión $d_{VC}$, ya que si nuestro espacio de búsqueda se establece en $\mathbf{R}^d$, dado un punto $x_1$, podemos coger un punto $x_2 \in R^d$ y medir la distancia entre estos dos puntos para ver lo que aporta el modelo. Como esta distancia puede ser infinita, $d_{VC} = \infty$.
+La complejidad de los modelos $SVM$ varía en función del $Kernel$ escogido para la función. En el caso de los modelos de base radial, como es el caso, esta dimensión $d_{VC}$, ya que si nuestro espacio de búsqueda se establece en $\mathbf{R}^d$, dado un punto $x_1$, podemos coger un punto $x_2 \in R^d$ y medir la distancia entre estos dos puntos para ver lo que aporta el modelo. Como esta distancia puede ser infinita, $d_{VC} = \infty$.[@dvcsvm]
 
 ### Ajuste del SVM al problema
 
@@ -556,7 +556,7 @@ Por último, al igual que otros modelos usados en este proyecto, las _Redes Neur
 
 ### Dimensión VC del modelo
 
-Tal y como se explica en [@lfd], la $d_{VC}$ para una sigmoid general puede ser infinita. Para el caso de la sigmoid $tanh(\cdot)$, con $sign(\cdot)$ en el nodo salida, tendríamos $d_{VC} = O(VQ)$ donde $V$ es el número de capas ocultas y $Q$ el número de pesos.
+La dimensión $d_{VC}$ para una red neuronal sigmoidal, generalmente, puede ser infinita. Pero, para el sigmoide $tanh(\cdot)$, donde el nodo salida es el $sign(\cdot)$, se puede ver que $d_{VC} = O(VQ)$ donde $V$ es el número de capas ocultas y $Q$ el número de pesos. 
 
 ## Normalización de los datos
 
@@ -665,6 +665,8 @@ Respecto a la curva del modelo de regresión logística, la tasa de aciertos de 
 
 En base a los resultados, y el análisis de los errores que obtiene cada modelo, junto con el estudio de la curva ROC para cada modelo, podemos elegir como mejores modelos al modelo $SVM$ y el modelo de \textit{Red Neuronal}, ya que son los que mejores resultados ofrecen.
 
-Respecto a la hora de elegir entre estos dos modelos, podemos elegir el modelo más sencillo, ya que, si seguimos el criterio de la \textit{Navaja de Ockham}, si tenemos dos modelos que se comportan de forma similar, se debe elegir el modelo más "simple". Otro aspecto a tomar en cuenta en la elección del modelo es la facilidad para poder explicar lo que hace este modelo para predecir los datos, y por ello en este aspecto gana el modelo $SVM$.
+Respecto a la hora de elegir entre estos dos modelos, podemos elegir el modelo más sencillo, ya que, si seguimos el criterio de la \textit{Navaja de Ockham}, si tenemos dos modelos que se comportan de forma similar, se debe elegir el modelo más "simple". Tal y como hemos visto, la dimensión $d_{VC}$ de los modelos $SVM$ puede llegar a ser infinita, mientras que para los modelos de redes neuronales, esta dimensión se establece como $d_{VC} = O(VQ)$, por lo que, la red neuronal es un modelo un poco más sencillo en este caso que el modelo $SVM$, a pesar de que el error es un poco peor. Otro aspecto a tomar en cuenta en la elección del modelo es la facilidad para poder explicar lo que hace este modelo para predecir los datos, y por ello en este aspecto gana el modelo $SVM$.
+
+Por todo esto, el mejor modelo elegido es \textbf{el modelo de \textit{Red Neuronal}}.
 
 # Referencias
