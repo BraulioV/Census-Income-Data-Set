@@ -674,9 +674,11 @@ Por todo esto, el mejor modelo elegido es \textbf{el modelo de \textit{Red Neuro
 
 # Ajustando un modelo de red neuronal recuperando los datos perdidos
 
+## Recuperando datos perdidos
+
 La idea de esto es recuperar todas las instancias de datos que hemos eliminado al contener valores perdidos. La forma de recuperar estos datos va a consistir en tratar de predecir esos datos con un modelo, y una vez predichos, ver cómo se comporta el nuevo modelo con todo el conjunto de datos al completo frente al que teníamos sin los datos perdidos.
 
-Como hemos dicho antes, las variables que tienen valores perdidos son _Workclass_, _Occupation_ y _Country_. Vamos a hacer tres modelos diferentes de red neuronal, usando los mismos parámetros que se han usado anteriormente.
+Como hemos dicho antes, las variables que tienen valores perdidos son _Workclass_, _Occupation_ y _Country_. Vamos a hacer tres modelos diferentes de red neuronal, esta vez con regularización _early stopping_ (usando un límite de cien iteraciones).
 
 ```{r}
 set.seed(1)
@@ -685,40 +687,77 @@ norm = normalizar_maxmin(data = adult.train, data_test = adult.test)
 adult.train.norm = norm[[1]]
 adult.test.norm = norm[[2]]
 norm = NULL
-workclass.nnet = nnet(formula = workclass ~ ., maxit=10000,
-    data = adult.train.clean.norm, size = 10, decay=0.1,trace=F)
-pred_workclass = predict(object = workclass.nnet, newdata = adult.train.norm[is.na(adult.train$workclass),], type="class")
+
+# debemos eliminar las columnas con NA para que funcione la función predict
+workclass.nnet = nnet(formula = workclass ~ ., maxit=100, 
+        data = subset(adult.train.clean.norm, select=c(-occupation, -country)),
+        size = 8, decay=1, trace=F)
+pred_workclass = predict(object = workclass.nnet, 
+            newdata = subset(adult.train.norm[is.na(adult.train$workclass),], 
+            select=c(-occupation, -country)), type="class")
+pred_test_workclass = predict(object = workclass.nnet, 
+            newdata = subset(adult.test.norm[is.na(adult.test$workclass),],
+            select = c(-occupation, -country)), type = "class")
 adult.train$workclass[is.na(adult.train$workclass)] = pred_workclass
+adult.train.norm$workclass[is.na(adult.train.norm$workclass)] = pred_workclass 
+adult.test$workclass[is.na(adult.test$workclass)] = pred_test_workclass
+adult.test.norm$workclass[is.na(adult.test.norm$workclass)] = pred_test_workclass
+
+occupation.nnet = nnet(formula = occupation ~ ., maxit=100, 
+        data = subset(adult.train.clean.norm, select=c(-workclass, -country)),
+        size = 8, decay=1, trace=F)
+pred_occupation = predict(object = occupation.nnet, 
+            newdata = subset(adult.train.norm[is.na(adult.train$occupation),], 
+            select=c(-workclass, -country)), type="class")
+pred_test_occupation = predict(object = occupation.nnet, 
+            newdata = subset(adult.test.norm[is.na(adult.test$occupation),], 
+            select=c(-workclass, -country)), type="class")
+adult.train$occupation[is.na(adult.train$occupation)] = pred_occupation
+adult.train.norm$occupation[is.na(adult.train.norm$occupation)] = pred_occupation
+adult.test$occupation[is.na(adult.test$occupation)] = pred_test_occupation
+adult.test.norm$occupation[is.na(adult.test.norm$occupation)] = pred_test_occupation
+
+country.nnet = nnet(formula = country ~ ., maxit=100, 
+        data = subset(adult.train.clean.norm, select=c(-workclass, -occupation)),
+        size = 8, decay=1, trace=F)
+pred_country = predict(object = country.nnet, 
+            newdata = subset(adult.train.norm[is.na(adult.train$country),], 
+            select=c(-workclass, -occupation)), type="class")
+pred_test_country = predict(object = country.nnet, 
+            newdata = subset(adult.test.norm[is.na(adult.test$country),], 
+            select=c(-workclass, -occupation)), type="class")
+adult.train$country[is.na(adult.train$country)] = pred_country
+adult.train.norm$country[is.na(adult.train.norm$country)] = pred_country
+adult.test$country[is.na(adult.test$country)] = pred_test_country
+adult.test.norm$country[is.na(adult.test.norm$country)] = pred_test_country
 ```
 
-## Modelo para recuperar las variables de *occupation*
-
-Para recuperar los datos de esta variable, crearemos un nuevo dataset que llamaremos *adult.train.occupation.lost*, donde almacenaremos las instancias en el conjunto de train que tienen datos perdidos en la variable *occupation*. 
+Una vez hecho esto, vemos que ya no tenemos ningún valor perdido en los datos: 
 
 ```{r}
-adult.train.occupation.lost = adult.train[is.na(adult.train$occupation) == T,]
-adult.test.occupation.lost = adult.test[is.na(adult.test$income) == T,]
-norm = normalizar_maxmin(data = adult.train.occupation.lost,  
-  data_test = adult.test.occupation.lost)
-adult.train.occupation.lost.norm = norm[[1]]
-adult.test.occupation.lost.norm = norm[[2]]
-
-outOfSampleErrorOccupation <- function(model, newdata = adult.test.clean.norm,  
-    printTable = T, type = "class"){
-  set.seed(1)
-  ypred = predict(object = model, newdata = newdata, type=type)
-  if(printTable)
-    print(table(predict=ypred, truth=newdata$occupation))
-  cat("Eout = ",mean((ypred != newdata$occupation)*1))
-}
+apply(X=adult.train, MARGIN=2, FUN=function(columna) length(is.na(columna)[is.na(columna)==T]))
+apply(X=adult.test, MARGIN=2, FUN=function(columna) length(is.na(columna)[is.na(columna)==T]))
 ```
 
+## Ajustando una red neuronal con el dataset completo
+
+Una vez hemos conseguido predecir todos los valores perdidos, vamos a ajustar el mismo modelo de _Red Neuronal_ ajustado anteriormente para ver la diferencia obtenida al usar más datos.
+
 ```{r}
+library(nnet)
 set.seed(1)
-model.nnet.occupation = nnet(formula = occupation ~ ., maxit=10000, 
-    data = adult.train.clean.norm, size = 8, decay=0.5,trace=T)
-outOfSampleErrorOccupation(model.nnet.occupation, adult.test.clean.norm, type="class")
-y = predict(model.nnet.occupation, newdata = adult.train.occupation.lost.norm, type = "class", )
+model.nnet = nnet(formula = income ~ ., maxit=10000, 
+    data = adult.train.norm, size = 10, decay=0.1,trace=F)
+outOfSampleError(model.nnet, adult.test.norm, type="class")
+```
+
+A pesar de disponer de una única capa oculta, el modelo ha sido capaz de obtener un resultado muy competitivo: $E_{out} = 15$%. Además, el número de fallos en cada clase está bastante equilibrado, casi tanto como en el modelo KNN con base radial:
+
+```{r}
+cat("Error obtenido en la clase <=50K: ", 
+    94700/length(adult.test$income[adult.test$income=="<=50K"]))
+cat("Error obtenido en la clase >50K: ", 
+    154100/length(adult.test$income[adult.test$income==">50K"]))
 ```
 
 # Referencias
