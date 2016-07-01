@@ -323,6 +323,8 @@ outOfSampleError <- function(model, newdata = adult.test.clean,  printTable = T,
 }
 set.seed(1)
 rf.clean = randomForest(income ~ ., data = adult.train.clean, importance = T)
+print(rf.clean)
+outOfSampleError(rf.clean)
 ```
 
 Con $m = 3$ obtenemos un modelo con un $18,18$% de error _Out Of Bag_. Al ajustar el modelo de Random Forest, cada uno de los árboles usa un subconjunto de los datos, y los no usados para calcular dicho árbol se quedan como _Out Of Bag_. Una vez generados los árboles, se predice el valor de cada dato usando los árboles en los que dicho dato ha sido _Out Of Bag_. En el caso de clasificación se hace mediante voto mayoritario. El error de clasificación obtenido para cada dato es válido, porque para predecir el dato se han usado árboles en los que el dato en cuestión no "ha participado" [@islroob].
