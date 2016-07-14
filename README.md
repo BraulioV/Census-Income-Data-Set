@@ -38,4 +38,4 @@ This data set can be found [here](http://archive.ics.uci.edu/ml/datasets/Census+
 
 ## Introduction
 
-Throughout this work, we will
+Throughout this work, we will apply different techniques and methods to fit the data set and create model that works well when predicting new data. First, we process the data to make it useful to the algorithms that we will use. 
