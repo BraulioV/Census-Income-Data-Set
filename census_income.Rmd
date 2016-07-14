@@ -96,7 +96,14 @@ Los atributos de los que disponemos son:
 
 ## Enfoque elegido
 
-El enfoque que usaremos para predecir la variable *income* es realizar tres modelos diferentes, cada uno con sus ventajas y desventajas, siendo uno un modelo ___paramétrico___, un modelo ___de base radial___ y un modelo basado en una ___red neuronal multicapa___. En el caso del modelo parámetrico, usaremos un modelo __Random Forest__, ya que obtiene un modelo que se ajusta muy bien a los datos, y además, `R` proporciona mecanismos para poder ajustar los parámetros óptimos y así reducir la posiblidad de sobreajustar los datos.
+El enfoque que se usará en este trabajo consiste en realizar una serie de modelos _**M'**_ usando distintos algoritmos. Cada uno de ellos tendrá un error de train y test diferentes, una complejidad distinta y comportamientos distintos a la hora de generalizar. Tras analizar cada uno de los distintos modelos, ver su complejidad, su idoneidad para el conjunto de datos, el error de test... se escogerá un modelo _**M**_ que será el "mejor" del conjunto de modelos desarrollados. A lo largo del trabajo se desarrollarán distintos modelos usando los siguientes algoritmos:
+
+  - **Modelo lineal**: se usará como modelo lineal la *regresión logística*.  
+  - **Modelo Random Forest**
+  - **Modelos de Base Radial**: en este caso, usaremos dos modelos de base radial diferentes:
+    - **Support Vector Machine**
+    - **KNN**
+  - **Red Neuornal**
 
 # Codificación de los datos de entrada para hacerlos útiles a los algoritmos
 
@@ -285,7 +292,7 @@ En esta gráfica vemos cómo el error del modelo sigue una tendencia no lineal, 
 
 ## Idoneidad del modelo *Random Forest* para los datos del problema
 
-Como modelo paramétrico, el árbol es capaz de clasificar los datos con cierta precisión y tiene la ventaja de que por sí solo, es capaz de explicar bastante bien la clasificación que ha hecho. Pero, utilizar un sólo árbol no ofrece la potencia necesaria para ajustarse lo suficientemente bien a los datos, además de que sufre de tener una alta variabilidad, ya que si particionamos los datos aleatoriamente en subconjuntos, podemos obtener resultados muy diferentes si aprendemos el modelo con un subconjunto u otro, y por ello usaremos el modelo *Random Forest*, que aunque pierda las facilidades de comprensión que tiene un árbol, nos ofrece un poder de ajuste muchísimo mayor, y un poder de generalización mayor.
+Un modelo usando un árbol como base, es capaz de clasificar los datos con cierta precisión y tiene la ventaja de que por sí solo, es capaz de explicar bastante bien la clasificación que ha hecho. Pero, utilizar un sólo árbol no ofrece la potencia necesaria para ajustarse lo suficientemente bien a los datos, además de que sufre de tener una alta variabilidad, ya que si particionamos los datos aleatoriamente en subconjuntos, podemos obtener resultados muy diferentes si aprendemos el modelo con un subconjunto u otro, y por ello usaremos el modelo *Random Forest*, que aunque pierda las facilidades de comprensión que tiene un árbol, nos ofrece un poder de ajuste muchísimo mayor, y un poder de generalización mayor.
 
 El porqué de usar *Random Forest* frente a un modelo *Bagging* es que con este último, tenemos que aprender el modelo usando las $p$ variables predictoras, mientras que con *Random Forest* podemos usar un subconjunto de tamaño $m$. *Bagging*, al hacer uso de los $p$ predictores, en el caso de que haya una variable predictora muy fuerte en los datos, todos los árboles que se acaben generando, tendrán esta variable predictora en los primeros nodos del árbol, mientras que al usar varios subconjuntos de los $p$ predictores de tamaño $m$ escogidos de forma aleatoria en *Random Forest*, seremos capaces de detectar otras relaciones más débiles entre las variables predictoras pero que también son capaces de predecir los datos con exactitud.
 
@@ -293,7 +300,7 @@ Respecto a los datos que tenemos (30162 datos de entrenamiento y 15060 datos de 
 
 ## Parámetros del modelo
 
-El parámetro que utiliza el modelo *Random Forest*, es el parámetro $m$, que indica el número de variables que se escogeran de forma aleatoria para crear un modelo de árbol para ajustar los datos cada vez que el modelo vaya a ajustar un nuevo árbol.
+El parámetro que utiliza el modelo *Random Forest*, es el parámetro $m$, que indica el número de variables que se escogeran de forma aleatoria para crear un modelo de árbol para ajustar los datos cada vez que el modelo vaya a ajustar un nuevo árbol. Al no ser un modelo paramétrico, no tiene mucho más modificar, ya que los pesos no se pueden establecer desde un principio.
 
 ## Hiperparámetros del modelo
 
