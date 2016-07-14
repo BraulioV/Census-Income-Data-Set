@@ -44,7 +44,7 @@ Throughout this work, we will apply different techniques and methods to fit the 
 
 Throughout this work, there are developed several models which will fit the dataset. There will be analyzed the advantages of each one, its complexity, which advantages each model has regarding to the dataset and the error each model has:
 
-* _Linear model__: _logistic regression_ will be used.
+* __Linear model__: _logistic regression_ will be used.
 * __Random Forest__
 * __Radial basis models__: two different types of models will be used:
   * __Support Vector Machine__
