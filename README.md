@@ -38,4 +38,26 @@ This data set can be found [here](http://archive.ics.uci.edu/ml/datasets/Census+
 
 ## Introduction
 
-Throughout this work, we will apply different techniques and methods to fit the data set and create model that works well when predicting new data. First, we process the data to make it useful to the algorithms that we will use. 
+Throughout this work, we will apply different techniques and methods to fit the data set and create model that works well when predicting new data. First, we process the data to make it useful to the algorithms that we will use. As a first approach, due to missing values in the dataset, it will be fitted a model using a subset of all dataset of which missing values are removed. After that, it will be selected the model ___M___ which has the best fit.
+
+## Developed models
+
+Throughout this work, there are developed several models which will fit the dataset. There will be analyzed the advantages of each one, its complexity, which advantages each model has regarding to the dataset and the error each model has:
+
+* _Linear model_: _logistic regression_ will be used.
+* _Random Forest_
+* _Radial basis models_: two different types of models will be used:
+  * __Support Vector Machine__
+  * __KNN__
+* __Neural Network_
+
+## Selection of the best model ___M___
+
+After developing each model, there will be some models _M'_, where each one will have better properties to others. After comparing them, the best one will be selected.
+
+## Getting the full dataset
+
+Once selected the best model, ___M___, it's well known that it has been developed without using the full dataset. That's why some models will be used to fit the variables where there are missing values so we can predict them and restore the full dataset. It must be done this way because all the variables where there are missing values are categorical, so it's impossible to apply any other technique as, for example, use the average of the data.
+
+Once restored the dataset, it will be created a new model ___M___ which will fit and learn the model with all data available.
+
