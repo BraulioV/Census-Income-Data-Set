@@ -5,7 +5,9 @@ Este conjunto de datos puede encontrarse [aquí](http://archive.ics.uci.edu/ml/d
 
 Below in english.
 
-Authors: Braulio Vargas López & Marta Gómez Macías
+## Autores
+
+Hecho por [__Marta Gómez Macías__](https://github.com/mgmacias95) y [__Braulio Vargas López__](https://github.com/BraulioV) para la asignatura Aprendizaje Automático - Grado en Ingeniería Informática (UGR).
 
 
 ## Introducción
