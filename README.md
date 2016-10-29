@@ -5,6 +5,9 @@ Este conjunto de datos puede encontrarse [aquí](http://archive.ics.uci.edu/ml/d
 
 Below in english.
 
+Authors: Braulio Vargas López & Marta Gómez Macías
+
+
 ## Introducción
 
 A lo largo de este trabajo, se aplicarán diferentes técnicas y métodos para ajustar un modelo capaz de ajustar el conjunto de datos y que tenga un buen comportamiento a la hora de predecir datos futuros. En un principio, tendremos una sección de procesamiento del conjunto de datos, para poder hacerlos útiles a los algoritmos que se usarán. Como primera aproximación, al contener el conjunto de datos instancias con valores perdidos en las variables predictoras, se optará por aprender un modelo sin el conjunto de datos completo, es decir, eliminando las instancias con datos perdidos. Tras esto, utilizaremos los siguientes algoritmos para aprender un modelo _**M'**_, y seleccionar un modelo final **M** que será el que mejor se comporte.
